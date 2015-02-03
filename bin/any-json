@@ -1,0 +1,64 @@
+#!/usr/bin/env node
+
+var fs=require("fs");
+var path=require("path");
+var Hjson=require("hjson");
+var any=require("../lib/index.js");
+var os=require('os');
+
+var args={}, argv=[];
+process.argv.slice(2).forEach(function(x) { if (x[0]==="-") { var i=x.indexOf("="); args[x.substr(1, i>0?i-1:undefined)]=i>0?x.substr(i+1):true; } else argv.push(x); });
+
+if (args["-help"] || args["-?"] || args["?"])
+{
+  console.error("usage: any-json [OPTIONS] [INPUT]");
+  console.error();
+  console.error("  any-json can be used to convert (almost) anything to JSON.");
+  console.error("  This version supports: "+Object.keys(any.async.parser).sort().join(", "));
+  console.error();
+  console.error("  any-json will read the given input file or read from stdin.");
+  console.error();
+  console.error("  Output format:");
+  console.error("    -j: will output as formatted JSON (default).");
+  console.error("    -c: will output as JSON (compact).");
+  console.error("    -h: will output as Hjson (Human JSON).");
+  console.error();
+  console.error("  Optional input format (usually the file extension):");
+  console.error("    -format=FORMAT");
+  console.error();
+  console.error("  -detect will try to detect the file format.");
+  console.error();
+  return 0;
+}
+
+if (argv.length)
+{
+  var file=argv[0];
+  var text=fs.readFileSync(file, "utf8");
+  cvt(text, args.format||path.extname(file));
+}
+else
+{
+  var stdin = process.openStdin();
+  stdin.setEncoding("utf-8");
+  var text = "";
+  stdin.on("data", function(chunk) { text += chunk; });
+  stdin.on("end", function() { cvt(text, args.format); });
+}
+
+function cvt(text, format)
+{
+  var obj;
+  if (args.detect) { return console.log(any.detectFormat(text)); }
+
+  any.async.convert(text, format, function(err, obj) {
+    if (err) return console.error(e.toString());
+
+    var result;
+    if (args.c) result=JSON.stringify(obj);
+    else if (args.h) result=Hjson.stringify(obj)+os.EOL;
+    else result=JSON.stringify(obj, null, 2)+os.EOL;
+
+    process.stdout.write(result);
+  });
+}
