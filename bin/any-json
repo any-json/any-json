@@ -28,7 +28,9 @@ if (args["-help"] || args["-?"] || args["?"])
   console.error();
   console.error("  -detect will try to detect the file format.");
   console.error();
-  return 0;
+  console.error("  {-?|-help} shows this help.");
+  console.error();
+  return;
 }
 
 if (argv.length)
@@ -48,11 +50,12 @@ else
 
 function cvt(text, format)
 {
-  var obj;
-  if (args.detect) { return console.log(any.detectFormat(text)); }
+  var obj, options={};
+  if (args.detect)
+    return any.async.detectFormat(text, function(err, res) { console.log(res); });
 
-  any.async.convert(text, format, function(err, obj) {
-    if (err) return console.error(e.toString());
+  any.async.convert(text, format, options, function(err, obj) {
+    if (err) { console.error(err.toString()); process.exit(1); }
 
     var result;
     if (args.c) result=JSON.stringify(obj);
