@@ -13,7 +13,8 @@ if (args["-help"] || args["-?"] || args["?"]) {
   console.error("usage: any-json [OPTIONS] [INPUT]");
   console.error();
   console.error("  any-json can be used to convert (almost) anything to JSON.");
-  console.error("  This version supports: "+Object.keys(any.async.parser).sort().join(", "));
+  console.error("  This version supports: ");
+  console.error("  "+Object.keys(any.async.parser).sort().join(", "));
   console.error();
   console.error("  any-json will read the given input file or read from stdin.");
   console.error();
