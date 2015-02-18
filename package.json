@@ -3,7 +3,7 @@
   "description": "Convert (almost) anything to JSON.",
   "main": "./lib/index.js",
   "author": "Christian Zangl",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "keywords": [
     "json",
     "hjson",
@@ -31,13 +31,14 @@
     }
   ],
   "dependencies": {
-    "cson-safe": "^1.0.5",
+    "cson-safe": "^1.0.5-moved",
     "fast-csv": "^0.5.5",
     "hjson": "^1.6.1",
-    "ini": "^1.3.2",
-    "js-yaml": "^3.2.5",
+    "ini": "^1.3.3",
+    "js-yaml": "^3.2.6",
     "json5": "^0.4.0",
+    "xlsjs": "^0.7.5",
     "xlsx": "^0.7.12",
-    "xml2js": "^0.4.4"
+    "xml2js": "^0.4.5"
   }
 }
