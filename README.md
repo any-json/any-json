@@ -8,7 +8,7 @@
 usage: any-json [OPTIONS] [INPUT]
 
   any-json can be used to convert (almost) anything to JSON.
-  This version supports: cson, csv, hjson, ini, json, json5, xml, yaml
+  This version supports: cson, csv, hjson, ini, json, json5, xlsx, xml, yaml
 
   any-json will read the given input file or read from stdin.
 
@@ -20,7 +20,7 @@ usage: any-json [OPTIONS] [INPUT]
   Optional input format (usually the file extension):
     -format=FORMAT
 
-  -detect will try to detect the file format.
+  -detect will try to detect the file format (experimental).
 
   {-?|-help} shows this help.
 ```

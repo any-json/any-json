@@ -9,8 +9,7 @@ var os=require('os');
 var args={}, argv=[];
 process.argv.slice(2).forEach(function(x) { if (x[0]==="-") { var i=x.indexOf("="); args[x.substr(1, i>0?i-1:undefined)]=i>0?x.substr(i+1):true; } else argv.push(x); });
 
-if (args["-help"] || args["-?"] || args["?"])
-{
+if (args["-help"] || args["-?"] || args["?"]) {
   console.error("usage: any-json [OPTIONS] [INPUT]");
   console.error();
   console.error("  any-json can be used to convert (almost) anything to JSON.");
@@ -26,30 +25,29 @@ if (args["-help"] || args["-?"] || args["?"])
   console.error("  Optional input format (usually the file extension):");
   console.error("    -format=FORMAT");
   console.error();
-  console.error("  -detect will try to detect the file format.");
+  console.error("  -detect will try to detect the file format (experimental).");
   console.error();
   console.error("  {-?|-help} shows this help.");
   console.error();
   return;
 }
 
-if (argv.length)
-{
+if (argv.length) {
   var file=argv[0];
-  var text=fs.readFileSync(file, "utf8");
-  cvt(text, args.format||path.extname(file));
-}
-else
-{
+  var format=args.format||path.extname(file);
+  var encoding=any.getEncoding(format);
+  var text=fs.readFileSync(file, encoding!=="binary"?encoding:undefined);
+  cvt(text, format);
+} else {
   var stdin = process.openStdin();
-  stdin.setEncoding("utf-8");
-  var text = "";
-  stdin.on("data", function(chunk) { text += chunk; });
+  var encoding=any.getEncoding(args.format);
+  if (encoding!=="binary") stdin.setEncoding(encoding);
+  var text="";
+  stdin.on("data", function(chunk) { text+=chunk; });
   stdin.on("end", function() { cvt(text, args.format); });
 }
 
-function cvt(text, format)
-{
+function cvt(text, format) {
   var obj, options={};
   if (args.detect)
     return any.async.detectFormat(text, function(err, res) { console.log(res); });
