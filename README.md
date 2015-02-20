@@ -8,7 +8,8 @@
 usage: any-json [OPTIONS] [INPUT]
 
   any-json can be used to convert (almost) anything to JSON.
-  This version supports: cson, csv, hjson, ini, json, json5, xls, xlsx, xml, yaml
+  This version supports:
+  cson, csv, hjson, ini, json, json5, xls, xlsx, xml, yaml
 
   any-json will read the given input file or read from stdin.
 
