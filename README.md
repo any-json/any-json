@@ -21,17 +21,19 @@ usage: any-json [OPTIONS] [INPUT]
   Optional input format (usually the file extension):
     -format=FORMAT
 
-  -detect will try to detect the file format (experimental).
-
   {-?|-help} shows this help.
 ```
 
 # Install from npm
 
 ```
-npm install any-json
+npm install any-json -g
 ```
 
 # API
 
-See lib/index.js
+See lib/anyjson.js
+
+# History
+
+- v2 removed the experimental/unreliable format detection.

@@ -3,8 +3,8 @@
 var fs=require("fs");
 var path=require("path");
 var Hjson=require("hjson");
-var any=require("../lib/index.js");
-var os=require('os');
+var any=require("../lib/anyjson.js");
+var os=require("os");
 
 var args={}, argv=[];
 process.argv.slice(2).forEach(function(x) { if (x[0]==="-") { var i=x.indexOf("="); args[x.substr(1, i>0?i-1:undefined)]=i>0?x.substr(i+1):true; } else argv.push(x); });
@@ -26,8 +26,6 @@ if (args["-help"] || args["-?"] || args["?"]) {
   console.error("  Optional input format (usually the file extension):");
   console.error("    -format=FORMAT");
   console.error();
-  console.error("  -detect will try to detect the file format (experimental).");
-  console.error();
   console.error("  {-?|-help} shows this help.");
   console.error();
   return;
@@ -40,7 +38,7 @@ if (argv.length) {
   var text=fs.readFileSync(file, encoding!=="binary"?encoding:undefined);
   cvt(text, format);
 } else {
-  var stdin = process.openStdin();
+  var stdin=process.openStdin();
   var encoding=any.getEncoding(args.format);
   if (encoding!=="binary") stdin.setEncoding(encoding);
   var text="";
@@ -50,8 +48,6 @@ if (argv.length) {
 
 function cvt(text, format) {
   var obj, options={};
-  if (args.detect)
-    return any.async.detectFormat(text, function(err, res) { console.log(res); });
 
   any.async.convert(text, format, options, function(err, obj) {
     if (err) { console.error(err.toString()); process.exit(1); }
