@@ -9,7 +9,7 @@ var os=require("os");
 var args={}, argv=[];
 process.argv.slice(2).forEach(function(x) { if (x[0]==="-") { var i=x.indexOf("="); args[x.substr(1, i>0?i-1:undefined)]=i>0?x.substr(i+1):true; } else argv.push(x); });
 
-if (args["-help"] || args["-?"] || args["?"]) {
+if (args["-help"] || args["-?"] || args["?"] || !argv.length && !args.format) {
   console.error("usage: any-json [OPTIONS] [INPUT]");
   console.error();
   console.error("  any-json can be used to convert (almost) anything to JSON.");
@@ -23,32 +23,44 @@ if (args["-help"] || args["-?"] || args["?"]) {
   console.error("    -c: will output as JSON (compact).");
   console.error("    -h: will output as Hjson (Human JSON).");
   console.error();
-  console.error("  Optional input format (usually the file extension):");
+  console.error("  Input format (usually the file extension, mandatory for stdin):");
   console.error("    -format=FORMAT");
+  console.error();
+  console.error("  To provide options for the parser you can specify them in the -opt");
+  console.error("  argument as Hjson. These depend on the format.");
+  console.error();
+  console.error("  Options for:");
+  console.error("    csv: https://www.npmjs.com/package/fast-csv#parsing");
+  console.error("      sample: -opt:'{headers: true}'");
+  console.error();
+  console.error("  Currently unavailable/awaiting PR:");
+  console.error("    xlsx: https://www.npmjs.com/package/xlsx");
+  console.error("    xls:  https://www.npmjs.com/package/xlsjs");
+  console.error("    xml:  https://www.npmjs.com/package/xml2js");
   console.error();
   console.error("  {-?|-help} shows this help.");
   console.error();
-  return;
+  process.exit(1);
 }
+
+if (args.opt) args.opt=Hjson.parse(args.opt);
 
 if (argv.length) {
   var file=argv[0];
   var format=args.format||path.extname(file);
   var encoding=any.getEncoding(format);
   var text=fs.readFileSync(file, encoding!=="binary"?encoding:undefined);
-  cvt(text, format);
+  cvt(text, format, args.opt);
 } else {
   var stdin=process.openStdin();
   var encoding=any.getEncoding(args.format);
   if (encoding!=="binary") stdin.setEncoding(encoding);
   var text="";
   stdin.on("data", function(chunk) { text+=chunk; });
-  stdin.on("end", function() { cvt(text, args.format); });
+  stdin.on("end", function() { cvt(text, args.format, args.opt); });
 }
 
-function cvt(text, format) {
-  var obj, options={};
-
+function cvt(text, format, options) {
   any.async.convert(text, format, options, function(err, obj) {
     if (err) { console.error(err.toString()); process.exit(1); }
 
