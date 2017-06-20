@@ -6,13 +6,13 @@
  * https://github.com/laktak/any-json
  */
 
-function getFormat(formatOrExtension) {
+function removeLeadingDot(formatOrExtension: string) {
   if (formatOrExtension && formatOrExtension[0]===".") return formatOrExtension.substr(1);
   else return formatOrExtension;
 }
 
 function getEncoding(format) {
-  format=getFormat(format);
+  format=removeLeadingDot(format);
   switch (format) {
     case "xlsx": return "binary";
     case "xls": return "binary";
@@ -22,17 +22,28 @@ function getEncoding(format) {
 
 // parsers that support a JSON.parse interface (immediately return)
 
-var parser={
-  json: function(text) { return JSON.parse(require("strip-json-comments")(text)); },
-  hjson: function(text) { return require("hjson").parse(text); },
-  json5: function(text) { return require("json5").parse(text); },
-  cson: function(text) { return require("cson-safe").parse(text); },
-  yaml: function(text) { return require("js-yaml").safeLoad(text); },
-  ini: function(text) { return require("ini").parse(text); },
+interface ParserSource {
+  [name: string]: (text: string) => object
+}
+
+var parser: ParserSource ={
+  json: function(text: string): object { return JSON.parse(require("strip-json-comments")(text)); },
+  hjson: function(text: string): object { return require("hjson").parse(text); },
+  json5: function(text: string): object { return require("json5").parse(text); },
+  cson: function(text: string): object { return require("cson-safe").parse(text); },
+  yaml: function(text: string): object { return require("js-yaml").safeLoad(text); },
+  ini: function(text: string): object { return require("ini").parse(text); },
+
 };
 
-function convert(text, format) {
-  format=getFormat(format);
+/**
+ * Parse the given text with the specified format
+ * @param text The original text
+ * @param format The original format
+ * @returns The parsed object
+ */
+function convert(text: string, format: string): object {
+  format=removeLeadingDot(format);
   if (!format) throw new Error("Missing format!");
 
   var parse=parser[format.toLowerCase()];
@@ -40,10 +51,14 @@ function convert(text, format) {
   else throw new Error("Unknown format "+format+"!");
 }
 
+interface AsyncParserSource{
+  [name: string]: (text: string, options: object, cb: (e: Error, res?: any) => void) => void
+}
 
-// parsers that require a callback
-
-var parserAsync={
+/**
+ * parsers that require a callback
+ */
+var parserAsync: AsyncParserSource={
   xml: function(text, options, cb) { require("xml2js").parseString(text, cb); },
   csv: function(text, options, cb) {
     var res=[];
@@ -95,7 +110,7 @@ Object.keys(parser).forEach(function(format) {
   };
 });
 
-function convertAsync(text, format, options, cb) {
+function convertAsync(text: string, format: string, options: any, cb: (e: Error, result?: any) => void) {
   if (format && format[0]===".") format=format.substr(1);
   if (!format) return cb(new Error("missing format"));
 
