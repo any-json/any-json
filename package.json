@@ -2,6 +2,7 @@
   "name": "any-json",
   "description": "Convert (almost) anything to JSON.",
   "main": "./lib/anyjson.js",
+  "typing": "./lib/anyjson.d.ts",
   "author": "Christian Zangl",
   "version": "2.2.0",
   "keywords": [
@@ -25,6 +26,10 @@
     "url": "https://github.com/laktak/any-json/issues"
   },
   "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "npm run build"
+  },
   "dependencies": {
     "cson-safe": "^1.0.5",
     "fast-csv": "^2.3.0",
@@ -36,5 +41,9 @@
     "xlsjs": "^0.7.5",
     "xlsx": "^0.8.1",
     "xml2js": "^0.4.17"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.0",
+    "typescript": "^2.3.4"
   }
 }
