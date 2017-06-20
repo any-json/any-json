@@ -119,6 +119,24 @@ function convertAsync(text: string, format: string, options: any, cb: (e: Error,
   else cb(new Error("Unknown format "+format+"!"));
 }
 
+const encodings = {
+  json: (obj) => JSON.stringify(obj),
+  hjson: (obj) => require('hjson').stringify(obj),
+  json5: (obj) => require('json5').stringify(obj),
+  cson: (obj) => require('cson-safe').stringify(obj),
+  yaml: (obj) => require('js-yaml').safeDump(obj),
+  ini: (obj) => require('ini').stringify(obj),
+}
+
+function encode(object: any, format: string): string {
+    const encoding = encodings[format]
+    if (encoding){
+      return encoding(object)
+    }
+
+    throw new Error(`Unsupported output format ${format}!`)
+}
+
 module.exports={
   getEncoding: getEncoding,
   convert: convert,
@@ -127,4 +145,6 @@ module.exports={
     convert: convertAsync,
     parser: parserAsync,
   },
+  encode: encode,
+  encodings: encodings,
 };
