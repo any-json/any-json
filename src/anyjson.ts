@@ -22,7 +22,7 @@ function removeLeadingDot(formatOrExtension: string) {
   else return formatOrExtension;
 }
 
-function getEncoding(format) {
+export function getEncoding(format) {
   format=removeLeadingDot(format);
   switch (format) {
     case "xlsx": return "binary";
@@ -33,7 +33,7 @@ function getEncoding(format) {
 
 // parsers that support a JSON.parse interface (immediately return)
 
-var parser = {
+export const parser = {
   json: function(text: string): object { return JSON.parse(strip_json_comments(text)); },
   hjson: hjson.parse,
   json5: json5.parse,
@@ -49,7 +49,7 @@ var parser = {
  * @param format The original format
  * @returns The parsed object
  */
-function convert(text: string, format: string): object {
+export function convert(text: string, format: string): object {
   format=removeLeadingDot(format);
   if (!format) throw new Error("Missing format!");
 
@@ -58,7 +58,7 @@ function convert(text: string, format: string): object {
   else throw new Error("Unknown format "+format+"!");
 }
 
-interface AsyncParserSource{
+export interface AsyncParserSource{
   [name: string]: (text: string, options: object, cb: (e: Error, res?: any) => void) => void
 }
 
@@ -125,7 +125,7 @@ function convertAsync(text: string, format: string, options: any, cb: (e: Error,
   else cb(new Error("Unknown format "+format+"!"));
 }
 
-const encodings = {
+export const _encodings = {
   json: JSON.stringify,
   hjson: (value, opts?) => hjson.stringify(value, opts),
   json5: json5.stringify,
@@ -134,23 +134,33 @@ const encodings = {
   ini: ini.stringify,
 }
 
-function encode(object: any, format: string): string {
-    const encoding = encodings[format]
-    if (encoding){
-      return encoding(object)
+export function encode(value: any, format: string): string {
+  switch (format) {
+    case 'cson': {
+      return _encodings.cson(value, null, 2)
     }
+    case 'json': {
+      return _encodings.json(value, null, 4)
+    }
+    case 'json5': {
+      return _encodings.json5(value, null, 4)
+    }
+    case 'yml':
+    case 'yaml': {
+      return _encodings.yaml(value);
+    }
+    default: {
+      const encoding = _encodings[format]
+      if (encoding) {
+        return encoding(value)
+      }
 
-    throw new Error(`Unsupported output format ${format}!`)
+      throw new Error(`Unsupported output format ${format}!`)
+    }
+  }
 }
 
-module.exports={
-  getEncoding: getEncoding,
-  convert: convert,
-  parser: parser,
-  async: {
-    convert: convertAsync,
-    parser: parserAsync,
-  },
-  encode: encode,
-  encodings: encodings,
+export const async = {
+  convert: convertAsync,
+  parser: parserAsync,
 };
