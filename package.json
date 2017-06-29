@@ -39,6 +39,7 @@
     "js-yaml": "^3.7.0",
     "json5": "^0.5.1",
     "strip-json-comments": "^2.0.1",
+    "util.promisify": "^1.0.0",
     "xlsjs": "^0.7.5",
     "xlsx": "^0.8.1",
     "xml2js": "^0.4.17"

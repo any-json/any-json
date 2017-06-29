@@ -6,16 +6,18 @@
  * https://github.com/laktak/any-json
  */
 
-import cson = require('cson-safe');
-import csv = require('fast-csv')
-import hjson = require('hjson');
-import ini = require('ini')
-import json5 = require('json5');
-import strip_json_comments = require('strip-json-comments')
-import XLS = require("xlsjs");
-import XLSX = require('xlsx')
-import xml2js = require('xml2js')
-import yaml = require('js-yaml')
+import * as cson from 'cson-safe';
+import * as csv from 'fast-csv';
+import * as hjson from 'hjson';
+import * as ini from 'ini';
+import * as json5 from 'json5';
+import * as util from 'util';
+import * as promisify from 'util.promisify';
+import strip_json_comments = require('strip-json-comments');
+import * as XLS from 'xlsjs';
+import * as XLSX from 'xlsx';
+import * as xml2js from 'xml2js';
+import * as yaml from 'js-yaml';
 
 function removeLeadingDot(formatOrExtension: string) {
   if (formatOrExtension && formatOrExtension[0]===".") return formatOrExtension.substr(1);
@@ -116,6 +118,21 @@ Object.keys(parser).forEach(function(format) {
   };
 });
 
+    const promiseMethod = function<T, U> (fn: (...T) => U) {
+        if (typeof fn !== "function") {
+            throw new TypeError("Parameter is not a function:" + fn);
+        }
+        return <(...T) => Promise<U>>function () {
+            try{
+              var value = fn.apply(this, arguments);
+              return Promise.resolve(value);
+            }
+            catch (error){
+              return Promise.reject(error);
+            }
+        };
+    };
+
 function convertAsync(text: string, format: string, options: any, cb: (e: Error, result?: any) => void) {
   if (format && format[0]===".") format=format.substr(1);
   if (!format) return cb(new Error("missing format"));
@@ -126,16 +143,16 @@ function convertAsync(text: string, format: string, options: any, cb: (e: Error,
 }
 
 export const _encodings = {
-  json: JSON.stringify,
-  hjson: (value, opts?) => hjson.stringify(value, opts),
-  json5: json5.stringify,
-  cson: (value, replacer?: (key: string, value: any) => any, space?: string | number) => cson.stringify(value, replacer, space),
-  yaml: yaml.safeDump,
-  ini: ini.stringify,
-  xml: (value, options?) => { const builder = new xml2js.Builder(options); return builder.buildObject(value) }
+  json: promiseMethod(JSON.stringify),
+  hjson: promiseMethod((value, opts?) => hjson.stringify(value, opts)),
+  json5: promiseMethod(json5.stringify),
+  cson: promiseMethod((value, replacer?: (key: string, value: any) => any, space?: string | number) => cson.stringify(value, replacer, space)),
+  yaml: promiseMethod(yaml.safeDump),
+  ini: promiseMethod(ini.stringify),
+  xml: promiseMethod(((value, options?) => { const builder = new xml2js.Builder(options); return builder.buildObject(value) }))
 }
 
-export function encode(value: any, format: string): string {
+export function encode(value: any, format: string): Promise<string> {
   switch (format) {
     case 'cson': {
       return _encodings.cson(value, null, 2)
