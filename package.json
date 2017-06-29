@@ -2,6 +2,7 @@
   "name": "any-json",
   "description": "Convert (almost) anything to JSON.",
   "main": "./lib/anyjson.js",
+  "typing": "./lib/anyjson.d.ts",
   "author": "Christian Zangl",
   "version": "2.2.0",
   "keywords": [
@@ -25,6 +26,11 @@
     "url": "https://github.com/laktak/any-json/issues"
   },
   "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && cp -Rf src/test/fixtures lib/test/ && mocha --ui tdd lib/test/",
+    "prepublish": "npm run build"
+  },
   "dependencies": {
     "cson-safe": "^1.0.5",
     "fast-csv": "^2.3.0",
@@ -33,8 +39,23 @@
     "js-yaml": "^3.7.0",
     "json5": "^0.5.1",
     "strip-json-comments": "^2.0.1",
+    "util.promisify": "^1.0.0",
     "xlsjs": "^0.7.5",
     "xlsx": "^0.8.1",
     "xml2js": "^0.4.17"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.1",
+    "@types/ini": "^1.3.29",
+    "@types/js-yaml": "^3.5.31",
+    "@types/json5": "0.0.29",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^8.0.0",
+    "@types/strip-json-comments": "0.0.28",
+    "@types/xlsx": "0.0.34",
+    "@types/xml2js": "^0.4.0",
+    "chai": "^4.0.2",
+    "mocha": "^3.4.2",
+    "typescript": "^2.3.4"
   }
 }

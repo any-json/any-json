@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "./lib",
+        "target": "es6",
+        "module": "commonjs"
+    },
+    "include": ["./src/**/*"]
+}
