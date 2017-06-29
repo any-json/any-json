@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<root>
+  <0>
+    <id>2</id>
+    <name>An ice sculpture</name>
+    <price>12.5</price>
+    <tags>cold</tags>
+    <tags>ice</tags>
+    <dimensions>
+      <length>7</length>
+      <width>12</width>
+      <height>9.5</height>
+    </dimensions>
+    <warehouseLocation>
+      <latitude>-78.75</latitude>
+      <longitude>20.4</longitude>
+    </warehouseLocation>
+  </0>
+  <1>
+    <id>3</id>
+    <name>A blue mouse</name>
+    <price>25.5</price>
+    <dimensions>
+      <length>3.1</length>
+      <width>1</width>
+      <height>1</height>
+    </dimensions>
+    <warehouseLocation>
+      <latitude>54.4</latitude>
+      <longitude>-32.7</longitude>
+    </warehouseLocation>
+  </1>
+</root>

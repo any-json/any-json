@@ -132,6 +132,7 @@ export const _encodings = {
   cson: (value, replacer?: (key: string, value: any) => any, space?: string | number) => cson.stringify(value, replacer, space),
   yaml: yaml.safeDump,
   ini: ini.stringify,
+  xml: (value, options?) => { const builder = new xml2js.Builder(options); return builder.buildObject(value) }
 }
 
 export function encode(value: any, format: string): string {
