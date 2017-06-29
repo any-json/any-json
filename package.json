@@ -43,7 +43,13 @@
     "xml2js": "^0.4.17"
   },
   "devDependencies": {
+    "@types/ini": "^1.3.29",
+    "@types/js-yaml": "^3.5.31",
+    "@types/json5": "0.0.29",
     "@types/node": "^8.0.0",
+    "@types/strip-json-comments": "0.0.28",
+    "@types/xlsx": "0.0.34",
+    "@types/xml2js": "^0.4.0",
     "typescript": "^2.3.4"
   }
 }

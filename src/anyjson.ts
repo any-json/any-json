@@ -6,6 +6,17 @@
  * https://github.com/laktak/any-json
  */
 
+import cson = require('cson-safe');
+import csv = require('fast-csv')
+import hjson = require('hjson');
+import ini = require('ini')
+import json5 = require('json5');
+import strip_json_comments = require('strip-json-comments')
+import XLS = require("xlsjs");
+import XLSX = require('xlsx')
+import xml2js = require('xml2js')
+import yaml = require('js-yaml')
+
 function removeLeadingDot(formatOrExtension: string) {
   if (formatOrExtension && formatOrExtension[0]===".") return formatOrExtension.substr(1);
   else return formatOrExtension;
@@ -22,17 +33,13 @@ function getEncoding(format) {
 
 // parsers that support a JSON.parse interface (immediately return)
 
-interface ParserSource {
-  [name: string]: (text: string) => object
-}
-
-var parser: ParserSource ={
-  json: function(text: string): object { return JSON.parse(require("strip-json-comments")(text)); },
-  hjson: function(text: string): object { return require("hjson").parse(text); },
-  json5: function(text: string): object { return require("json5").parse(text); },
-  cson: function(text: string): object { return require("cson-safe").parse(text); },
-  yaml: function(text: string): object { return require("js-yaml").safeLoad(text); },
-  ini: function(text: string): object { return require("ini").parse(text); },
+var parser = {
+  json: function(text: string): object { return JSON.parse(strip_json_comments(text)); },
+  hjson: hjson.parse,
+  json5: json5.parse,
+  cson: cson.parse,
+  yaml: yaml.safeLoad,
+  ini: ini.parse,
 
 };
 
@@ -59,25 +66,24 @@ interface AsyncParserSource{
  * parsers that require a callback
  */
 var parserAsync: AsyncParserSource={
-  xml: function(text, options, cb) { require("xml2js").parseString(text, cb); },
+  xml: function(text, options, cb) { xml2js.parseString(text, cb); },
   csv: function(text, options, cb) {
     var res=[];
-    require("fast-csv").fromString(text, options)
+    csv.fromString(text, options)
     .on("data", function(data) { res.push(data); })
     .on("end", function() { cb(null, res); });
   },
   xlsx: function(text, options, cb) {
-    var XLSX=require("xlsx");
     var workbook=XLSX.read(new Buffer(text), { type: "buffer" });
     var res={};
     workbook.SheetNames.forEach(function(sheetName) {
-      var roa=XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+      // TODO: make the following line type-check
+      var roa=XLSX.utils['sheet_to_row_object_array'](workbook.Sheets[sheetName]);
       if (roa.length>0) res[sheetName]=roa;
     });
     cb(null, res);
   },
   xls: function(text, options, cb) {
-    var XLS=require("xlsjs");
     var workbook=XLS.read(new Buffer(text), { type: "buffer" });
     var res={};
     workbook.SheetNames.forEach(function(sheetName) {
@@ -120,12 +126,12 @@ function convertAsync(text: string, format: string, options: any, cb: (e: Error,
 }
 
 const encodings = {
-  json: (obj) => JSON.stringify(obj),
-  hjson: (obj) => require('hjson').stringify(obj),
-  json5: (obj) => require('json5').stringify(obj),
-  cson: (obj) => require('cson-safe').stringify(obj),
-  yaml: (obj) => require('js-yaml').safeDump(obj),
-  ini: (obj) => require('ini').stringify(obj),
+  json: JSON.stringify,
+  hjson: (value, opts?) => hjson.stringify(value, opts),
+  json5: json5.stringify,
+  cson: (value, replacer?: (key: string, value: any) => any, space?: string | number) => cson.stringify(value, replacer, space),
+  yaml: yaml.safeDump,
+  ini: ini.stringify,
 }
 
 function encode(object: any, format: string): string {
