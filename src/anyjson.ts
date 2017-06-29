@@ -163,10 +163,6 @@ export function encode(value: any, format: string): Promise<string> {
     case 'json5': {
       return _encodings.json5(value, null, 4)
     }
-    case 'yml':
-    case 'yaml': {
-      return _encodings.yaml(value);
-    }
     default: {
       const encoding = _encodings[format]
       if (encoding) {
