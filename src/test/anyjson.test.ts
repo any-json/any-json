@@ -20,3 +20,23 @@ suite('encode', function () {
         })
     }
 })
+
+suite('decode', function () {
+
+    const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
+
+    for (const format of Object.keys(anyjson._encodings)) {
+        test(format, async function () {
+            const contents = fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.' + format), 'utf8')
+            const actual = await anyjson.decode(format, contents);
+
+            if (format === 'ini'){
+                console.log(expected)
+                console.log(actual)
+            }
+
+            return assert.deepEqual(actual, expected)
+        })
+    }
+
+})

@@ -6,7 +6,7 @@
  * https://github.com/laktak/any-json
  */
 
-import * as cson from 'cson-safe';
+import * as cson from 'cson';
 import * as csv from 'fast-csv';
 import * as hjson from 'hjson';
 import * as ini from 'ini';
@@ -20,12 +20,12 @@ import * as xml2js from 'xml2js';
 import * as yaml from 'js-yaml';
 
 function removeLeadingDot(formatOrExtension: string) {
-  if (formatOrExtension && formatOrExtension[0]===".") return formatOrExtension.substr(1);
+  if (formatOrExtension && formatOrExtension[0] === ".") return formatOrExtension.substr(1);
   else return formatOrExtension;
 }
 
 export function getEncoding(format) {
-  format=removeLeadingDot(format);
+  format = removeLeadingDot(format);
   switch (format) {
     case "xlsx": return "binary";
     case "xls": return "binary";
@@ -34,15 +34,48 @@ export function getEncoding(format) {
 }
 
 // parsers that support a JSON.parse interface (immediately return)
+export async function decode(format: string, text: string, reviver?: (key: any, value: any) => any): Promise<any> {
+  switch (format) {
+    case 'cson': {
+      return cson.parse(text, reviver)
+    }
+    case 'csv': {
+      return await promisify(parserAsync.csv)(text)
+    }
+    case 'hjson': {
+      return hjson.parse(text, reviver)
+    }
+    case 'ini': {
+      return ini.parse(text)
+    }
+    case 'json': {
+      return JSON.parse(text, reviver)
+    }
+    case 'json5': {
+      return json5.parse(text, reviver)
+    }
+    case 'xls': {
+      return await promisify(parserAsync.xls)(text)
+    }
+    case 'xlsx': {
+      return await promisify(parserAsync.xlsx)(text)
+    }
+    case 'xml': {
+      return await promisify(parserAsync.xml)(text)
+    }
+    case 'yaml': {
+      return yaml.safeLoad(text)
+    }
+  }
+}
 
 export const parser = {
-  json: function(text: string): object { return JSON.parse(strip_json_comments(text)); },
+  json: function (text: string): object { return JSON.parse(strip_json_comments(text)); },
   hjson: hjson.parse,
   json5: json5.parse,
   cson: cson.parse,
   yaml: yaml.safeLoad,
-  ini: ini.parse,
-
+  ini: ini.parse
 };
 
 /**
@@ -52,54 +85,54 @@ export const parser = {
  * @returns The parsed object
  */
 export function convert(text: string, format: string): object {
-  format=removeLeadingDot(format);
+  format = removeLeadingDot(format);
   if (!format) throw new Error("Missing format!");
 
-  var parse=parser[format.toLowerCase()];
+  var parse = parser[format.toLowerCase()];
   if (parse) return parse(text);
-  else throw new Error("Unknown format "+format+"!");
+  else throw new Error("Unknown format " + format + "!");
 }
 
-export interface AsyncParserSource{
+export interface AsyncParserSource {
   [name: string]: (text: string, options: object, cb: (e: Error, res?: any) => void) => void
 }
 
 /**
  * parsers that require a callback
  */
-var parserAsync: AsyncParserSource={
-  xml: function(text, options, cb) { xml2js.parseString(text, cb); },
-  csv: function(text, options, cb) {
-    var res=[];
+var parserAsync: AsyncParserSource = {
+  xml: function (text, options, cb) { xml2js.parseString(text, cb); },
+  csv: function (text, options, cb) {
+    var res = [];
     csv.fromString(text, options)
-    .on("data", function(data) { res.push(data); })
-    .on("end", function() { cb(null, res); });
+      .on("data", function (data) { res.push(data); })
+      .on("end", function () { cb(null, res); });
   },
-  xlsx: function(text, options, cb) {
-    var workbook=XLSX.read(new Buffer(text), { type: "buffer" });
-    var res={};
-    workbook.SheetNames.forEach(function(sheetName) {
+  xlsx: function (text, options, cb) {
+    var workbook = XLSX.read(new Buffer(text), { type: "buffer" });
+    var res = {};
+    workbook.SheetNames.forEach(function (sheetName) {
       // TODO: make the following line type-check
-      var roa=XLSX.utils['sheet_to_row_object_array'](workbook.Sheets[sheetName]);
-      if (roa.length>0) res[sheetName]=roa;
+      var roa = XLSX.utils['sheet_to_row_object_array'](workbook.Sheets[sheetName]);
+      if (roa.length > 0) res[sheetName] = roa;
     });
     cb(null, res);
   },
-  xls: function(text, options, cb) {
-    var workbook=XLS.read(new Buffer(text), { type: "buffer" });
-    var res={};
-    workbook.SheetNames.forEach(function(sheetName) {
-      var roa=XLS.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
-      if (roa.length>0) res[sheetName]=roa;
+  xls: function (text, options, cb) {
+    var workbook = XLS.read(new Buffer(text), { type: "buffer" });
+    var res = {};
+    workbook.SheetNames.forEach(function (sheetName) {
+      var roa = XLS.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+      if (roa.length > 0) res[sheetName] = roa;
     });
     cb(null, res);
   },
 };
 
 // wrap for safety
-Object.keys(parserAsync).forEach(function(format) {
-  var wrap=parserAsync[format];
-  parserAsync[format]=function(text, options, cb) {
+Object.keys(parserAsync).forEach(function (format) {
+  var wrap = parserAsync[format];
+  parserAsync[format] = function (text, options, cb) {
     try { wrap(text, options, cb); }
     catch (err) { cb(err); }
   };
@@ -107,39 +140,39 @@ Object.keys(parserAsync).forEach(function(format) {
 
 
 // add from sync
-Object.keys(parser).forEach(function(format) {
-  parserAsync[format]=function(text, options, cb) {
-    process.nextTick(function() {
+Object.keys(parser).forEach(function (format) {
+  parserAsync[format] = function (text, options, cb) {
+    process.nextTick(function () {
       var obj;
-      try { obj=parser[format](text); }
+      try { obj = parser[format](text); }
       catch (err) { return cb(err); }
       cb(null, obj);
     });
   };
 });
 
-    const promiseMethod = function<T, U> (fn: (...T) => U) {
-        if (typeof fn !== "function") {
-            throw new TypeError("Parameter is not a function:" + fn);
-        }
-        return <(...T) => Promise<U>>function () {
-            try{
-              var value = fn.apply(this, arguments);
-              return Promise.resolve(value);
-            }
-            catch (error){
-              return Promise.reject(error);
-            }
-        };
-    };
+const promiseMethod = function <T, U>(fn: (...T) => U) {
+  if (typeof fn !== "function") {
+    throw new TypeError("Parameter is not a function:" + fn);
+  }
+  return <(...T) => Promise<U>>function () {
+    try {
+      var value = fn.apply(this, arguments);
+      return Promise.resolve(value);
+    }
+    catch (error) {
+      return Promise.reject(error);
+    }
+  };
+};
 
 function convertAsync(text: string, format: string, options: any, cb: (e: Error, result?: any) => void) {
-  if (format && format[0]===".") format=format.substr(1);
+  if (format && format[0] === ".") format = format.substr(1);
   if (!format) return cb(new Error("missing format"));
 
-  var parse=parserAsync[format.toLowerCase()];
+  var parse = parserAsync[format.toLowerCase()];
   if (parse) parse(text, options, cb);
-  else cb(new Error("Unknown format "+format+"!"));
+  else cb(new Error("Unknown format " + format + "!"));
 }
 
 export const _encodings = {
