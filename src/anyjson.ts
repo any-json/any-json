@@ -96,13 +96,13 @@ class YamlConverter implements Format {
   }
 }
 
-const codecs = [
+const codecs = new Map([
   new CsonConverter(),
   new IniConverter(),
   new JsonConverter(),
   new Json5Converter(),
   new YamlConverter()
-]
+].map(c => [c.name, c] as [string, Format]))
 
 /**
  * Parse the given text with the specified format
@@ -120,7 +120,7 @@ export async function convert(text: string, format: string): Promise<any> {
 }
 
 export async function decode(format: string, text: string, reviver?: (key: any, value: any) => any): Promise<any> {
-  const codec = codecs.find(x => x.name === format)
+  const codec = codecs.get(format)
 
   if (codec) {
     return codec.decode(text, reviver);
@@ -129,8 +129,8 @@ export async function decode(format: string, text: string, reviver?: (key: any, 
   throw new Error("Unknown format " + format + "!");
 }
 
-export async function encode(value: any, format: string): Promise<string> {
-  const codec = codecs.find(x => x.name === format)
+export async function encode(value: any, format: string): Promise<string | Buffer> {
+  const codec = codecs.get(format)
 
   if (codec) {
     return codec.encode(value);
