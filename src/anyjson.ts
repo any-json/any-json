@@ -24,7 +24,7 @@ function removeLeadingDot(formatOrExtension: string) {
   else return formatOrExtension;
 }
 
-function getEncoding(format) {
+function getEncoding(format: string) {
   format = removeLeadingDot(format);
   switch (format) {
     case "xlsx": return "binary";
@@ -118,7 +118,7 @@ export enum Formats {
 export async function encode(value: any, format: string): Promise<string> {
   switch (format) {
     case 'cson': {
-      return cson.stringify(value, null, 2)
+      return cson.stringify(value, undefined, 2)
     }
     case 'csv': {
       return ""; // TODO
@@ -142,11 +142,14 @@ export async function encode(value: any, format: string): Promise<string> {
       return ""; // TODO
     }
     case 'xml': {
-      const builder = new xml2js.Builder(null);
+      const builder = new xml2js.Builder();
       return builder.buildObject(value)
     }
     case 'yaml': {
       return yaml.safeDump(value)
+    }
+    default:{
+      throw new Error("Unknown format " + format + "!");
     }
   }
 }
