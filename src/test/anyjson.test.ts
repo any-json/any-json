@@ -12,7 +12,7 @@ suite('encode', function () {
 
     const input = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
 
-    for (const format of Object.keys(anyjson.encodings).filter(n => typeof(anyjson.encodings[n]) === 'number')) {
+    for (const format of Object.keys(anyjson.Formats).filter(n => typeof(anyjson.Formats[n]) === 'number')) {
         test(format, async function () {
             const actual = anyjson.encode(input, format)
             const expected = readFile(path.join(__dirname, 'fixtures', 'out', `product-set.${format}`), 'utf8')
@@ -25,7 +25,7 @@ suite('decode', function () {
 
     const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
 
-    for (const format of Object.keys(anyjson.encodings).filter(n => typeof(anyjson.encodings[n]) === 'number')) {
+    for (const format of Object.keys(anyjson.Formats).filter(n => typeof(anyjson.Formats[n]) === 'number')) {
         test(format, async function () {
             const contents = fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.' + format), 'utf8')
             const actual = await anyjson.decode(format, contents);

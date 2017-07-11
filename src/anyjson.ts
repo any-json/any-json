@@ -102,14 +102,17 @@ export async function convert(text: string, format: string): Promise<any> {
   else throw new Error("Unknown format " + format + "!");
 }
 
-export enum encodings {
-  json,
-  hjson,
-  json5,
+export enum Formats {
   cson,
-  yaml,
+  csv,
+  hjson,
   ini,
+  json,
+  json5,
+  xls,
+  xlsx,
   xml,
+  yaml,
 }
 
 export async function encode(value: any, format: string): Promise<string> {
