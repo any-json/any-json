@@ -10,6 +10,7 @@ import * as cson from 'cson';
 import * as ini from 'ini';
 import * as json5 from 'json5';
 import * as util from 'util';
+require('util.promisify/shim')();
 import strip_json_comments = require('strip-json-comments');
 import * as XLSX from 'xlsx';
 import * as xml2js from 'xml2js';
@@ -84,6 +85,19 @@ class Json5Converter implements Format {
   }
 }
 
+class XmlConverter implements Format {
+  readonly name: string = 'xml'
+
+  public async encode(value: any) {
+    const builder = new xml2js.Builder();
+    return builder.buildObject(value)
+  }
+
+  public decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
+    return util.promisify(xml2js.parseString)(text)
+  }
+}
+
 class YamlConverter implements Format {
   readonly name: string = 'yaml'
 
@@ -101,6 +115,7 @@ const codecs = new Map([
   new IniConverter(),
   new JsonConverter(),
   new Json5Converter(),
+  new XmlConverter(),
   new YamlConverter()
 ].map(c => [c.name, c] as [string, Format]))
 
