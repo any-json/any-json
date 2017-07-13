@@ -1,7 +1,7 @@
+import "mocha"
 import * as anyjson from '../anyjson'
 import * as fs from 'fs'
-var promisify: any;
-var promisify = require('util.promisify');
+import promisify = require('util.promisify');
 const writeFile = promisify(fs.writeFile)
 const readFile = promisify(fs.readFile)
 import * as path from 'path'

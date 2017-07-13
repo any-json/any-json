@@ -4,7 +4,11 @@
         "outDir": "./lib",
         "target": "es6",
         "module": "commonjs",
-        "strict": true
+        "strict": true,
+        "baseUrl": "types",
+        "typeRoots": [
+            "types"
+        ]
     },
     "include": ["./src/**/*"]
 }
