@@ -7,6 +7,7 @@
  */
 
 import * as cson from 'cson';
+import * as hjson from 'hjson';
 import * as ini from 'ini';
 import * as json5 from 'json5';
 import * as util from 'util';
@@ -45,6 +46,18 @@ class CsonConverter implements Format {
 
   public async decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
     return cson.parse(text, reviver)
+  }
+}
+
+class HjsonConverter implements Format {
+  readonly name: string = 'hjson'
+
+  public async encode(value: any) {
+    return hjson.stringify(value)
+  }
+
+  public async decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
+    return hjson.parse(text)
   }
 }
 
@@ -112,6 +125,7 @@ class YamlConverter implements Format {
 
 const codecs = new Map([
   new CsonConverter(),
+  new HjsonConverter(),
   new IniConverter(),
   new JsonConverter(),
   new Json5Converter(),
