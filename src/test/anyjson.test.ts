@@ -71,9 +71,10 @@ suite('problematic-formats', () => {
 
   suite('decode', function () {
     suite('product-set', () => {
-      const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
 
       for (const format of safe_formats) {
+        const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', `product-set.${format}.json`), 'utf8'));
+
         test(format, async function () {
           const contents = fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.' + format), 'utf8')
           const actual = await anyjson.decode(format, contents);
