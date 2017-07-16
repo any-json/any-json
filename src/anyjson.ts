@@ -32,13 +32,13 @@ function getEncoding(format: string) {
   }
 }
 
-interface Format {
+interface FormatConversion {
   readonly name: string
   encode(value: any): Promise<string | Buffer>
   decode(text: string, reviver?: (key: any, value: any) => any): Promise<any>
 }
 
-class CsonConverter implements Format {
+class CsonConverter implements FormatConversion {
   readonly name: string = 'cson'
 
   public async encode(value: any) {
@@ -50,7 +50,7 @@ class CsonConverter implements Format {
   }
 }
 
-class HjsonConverter implements Format {
+class HjsonConverter implements FormatConversion {
   readonly name: string = 'hjson'
 
   public async encode(value: any) {
@@ -62,7 +62,7 @@ class HjsonConverter implements Format {
   }
 }
 
-class IniConverter implements Format {
+class IniConverter implements FormatConversion {
   readonly name: string = 'ini'
 
   private looksLikeArray(object: object): boolean {
@@ -93,7 +93,7 @@ class IniConverter implements Format {
   }
 }
 
-class JsonConverter implements Format {
+class JsonConverter implements FormatConversion {
   readonly name: string = 'json'
 
   public async encode(value: any) {
@@ -106,7 +106,7 @@ class JsonConverter implements Format {
 }
 
 
-class Json5Converter implements Format {
+class Json5Converter implements FormatConversion {
   readonly name: string = 'json5'
 
   public async encode(value: any) {
@@ -118,7 +118,7 @@ class Json5Converter implements Format {
   }
 }
 
-class XmlConverter implements Format {
+class XmlConverter implements FormatConversion {
   readonly name: string = 'xml'
 
   public async encode(value: any) {
@@ -131,7 +131,7 @@ class XmlConverter implements Format {
   }
 }
 
-class YamlConverter implements Format {
+class YamlConverter implements FormatConversion {
   readonly name: string = 'yaml'
 
   public async encode(value: any) {
@@ -151,7 +151,7 @@ const codecs = new Map([
   new Json5Converter(),
   new XmlConverter(),
   new YamlConverter()
-].map(c => [c.name, c] as [string, Format]))
+].map(c => [c.name, c] as [string, FormatConversion]))
 
 /**
  * Parse the given text with the specified format
