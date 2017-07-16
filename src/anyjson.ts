@@ -1,6 +1,7 @@
 /*! @preserve
  * any-json
  *
+ * Copyright 2017 Adam Voss, MIT license
  * Copyright 2015-2016 Christian Zangl, MIT license
  * Details and documentation:
  * https://github.com/laktak/any-json
@@ -64,12 +65,31 @@ class HjsonConverter implements Format {
 class IniConverter implements Format {
   readonly name: string = 'ini'
 
+  private looksLikeArray(object: object): boolean {
+    const areInts = Object.getOwnPropertyNames(object).every(s => /^\d+$/.test(s))
+    if (!areInts) {
+      return false
+    }
+    const ints = Object.getOwnPropertyNames(object).map(s => parseInt(s)).sort();
+    return [...Array(ints.length)].every(i => i === ints[i])
+  }
+
   public async encode(value: any) {
     return ini.stringify(value)
   }
 
   public async decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
-    return ini.parse(text)
+    const parsed = ini.parse(text)
+    if (!this.looksLikeArray(parsed)) {
+      return parsed
+    }
+
+    const array = Array(Object.getOwnPropertyNames(parsed).length)
+    for (var index = 0; index < array.length; index++) {
+      array[index] = parsed[index]
+    }
+
+    return array;
   }
 }
 
