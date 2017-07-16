@@ -9,6 +9,22 @@ import * as chai from 'chai'
 
 const assert = chai.assert;
 
+function testEncode(formats: string[]) {
+  suite('encode', function () {
+    suite('product-set', () => {
+      const input = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
+
+      for (const format of formats) {
+        test(format, async function () {
+          const actual = anyjson.encode(input, format)
+          const expected = readFile(path.join(__dirname, 'fixtures', 'out', `product-set.${format}`), 'utf8')
+          return assert.strictEqual(await actual, await expected)
+        })
+      }
+    });
+  });
+};
+
 suite('safe-formats', () => {
 
   const safe_formats = [
@@ -19,19 +35,7 @@ suite('safe-formats', () => {
     "yaml"
   ]
 
-  suite('encode', function () {
-    suite('product-set', () => {
-      const input = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
-
-      for (const format of safe_formats) {
-        test(format, async function () {
-          const actual = anyjson.encode(input, format)
-          const expected = readFile(path.join(__dirname, 'fixtures', 'out', `product-set.${format}`), 'utf8')
-          return assert.strictEqual(await actual, await expected)
-        })
-      }
-    });
-  });
+  testEncode(safe_formats);
 
   suite('decode', function () {
     suite('product-set', () => {
@@ -50,29 +54,17 @@ suite('safe-formats', () => {
 
 suite('problematic-formats', () => {
 
-  const safe_formats = [
+  const problematic_formats = [
     "ini",
     "xml"
   ]
 
-  suite('encode', function () {
-    suite('product-set', () => {
-      const input = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
-
-      for (const format of safe_formats) {
-        test(format, async function () {
-          const actual = anyjson.encode(input, format)
-          const expected = readFile(path.join(__dirname, 'fixtures', 'out', `product-set.${format}`), 'utf8')
-          return assert.strictEqual(await actual, await expected)
-        })
-      }
-    });
-  });
+  testEncode(problematic_formats);
 
   suite('decode', function () {
     suite('product-set', () => {
 
-      for (const format of safe_formats) {
+      for (const format of problematic_formats) {
         const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', `product-set.${format}.json`), 'utf8'));
 
         test(format, async function () {
@@ -85,39 +77,27 @@ suite('problematic-formats', () => {
   });
 });
 
-suite('tabular-formats', () => {
+// suite('tabular-formats', () => {
 
-  const safe_formats = [
-    "csv",
-    "xls",
-    "xlsx"
-  ]
+//   const safe_formats = [
+//     "csv",
+//     "xls",
+//     "xlsx"
+//   ]
 
-  suite('encode', function () {
-    suite('product-set', () => {
-      const input = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
+//   testEncode(safe_formats);
 
-      for (const format of safe_formats) {
-        test(format, async function () {
-          const actual = anyjson.encode(input, format)
-          const expected = readFile(path.join(__dirname, 'fixtures', 'out', `product-set.${format}`), 'utf8')
-          return assert.strictEqual(await actual, await expected)
-        })
-      }
-    });
-  });
+//   suite('decode', function () {
+//     suite('product-set', () => {
+//       const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
 
-  suite('decode', function () {
-    suite('product-set', () => {
-      const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
-
-      for (const format of safe_formats) {
-        test(format, async function () {
-          const contents = fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.' + format), 'utf8')
-          const actual = await anyjson.decode(format, contents);
-          return assert.deepEqual(actual, expected)
-        })
-      }
-    });
-  });
-});
+//       for (const format of safe_formats) {
+//         test(format, async function () {
+//           const contents = fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.' + format), 'utf8')
+//           const actual = await anyjson.decode(format, contents);
+//           return assert.deepEqual(actual, expected)
+//         })
+//       }
+//     });
+//   });
+// });
