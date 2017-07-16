@@ -4,7 +4,7 @@
   "main": "./lib/anyjson.js",
   "typing": "./lib/anyjson.d.ts",
   "author": "Christian Zangl",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "keywords": [
     "json",
     "hjson",
