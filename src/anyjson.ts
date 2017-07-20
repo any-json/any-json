@@ -8,6 +8,7 @@
  */
 
 import * as cson from 'cson';
+import csv = require('fast-csv');
 import * as hjson from 'hjson';
 import * as ini from 'ini';
 import * as json5 from 'json5';
@@ -47,6 +48,37 @@ class CsonConverter implements FormatConversion {
 
   public async decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
     return cson.parse(text, reviver)
+  }
+}
+
+class CsvConverter implements FormatConversion {
+  readonly name: string = 'csv'
+
+  public encode(value: any) {
+    return new Promise<string>((resolve, reject) => {
+      if (Array.isArray(value)) {
+        csv.writeToString(value, { headers: true }, function (err, result) {
+          if (err) {
+            reject(err);
+          }
+          else {
+            resolve(result);
+          }
+        })
+      }
+      else {
+        reject("CSV encoding requires the object be an array.")
+      }
+    })
+  }
+
+  public decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const res: any[] = [];
+      csv.fromString(text, { headers: true })
+        .on("data", function (data) { res.push(data); })
+        .on("end", function () { resolve(res); });
+    });
   }
 }
 
@@ -145,6 +177,7 @@ class YamlConverter implements FormatConversion {
 
 const codecs = new Map([
   new CsonConverter(),
+  new CsvConverter(),
   new HjsonConverter(),
   new IniConverter(),
   new JsonConverter(),
