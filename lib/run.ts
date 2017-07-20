@@ -38,50 +38,50 @@ const inputConfiguration =
         ]
     };
 
-async function main() {
+async function main(argv: string[]) {
     const parser = dashdash.createParser(inputConfiguration);
 
-    function printHelp() {
+    function getHelpMessage() {
         const help = parser.help();
-        console.log(
-            `usage: any-json FILE [options]
+        return `usage: any-json FILE [options]
 
 any-json can be used to convert (almost) anything to or from JSON.
 
 options:
-${help}`);
-        process.exit(0);
+${help}`
     }
+
     const options = function () {
         try {
-            return parser.parse();
+            return parser.parse(argv);
         }
         catch (err) {
-            console.log(err.message);
-            process.exit(1);
-            throw "unrechable";
+            throw err.message;
         }
     }();
 
     if (options.version) {
-        console.log(`any-json version ${version}`)
-        process.exit(0);
+        return `any-json version ${version}`;
     }
 
     if (options.help || process.argv.length <= 2) {
-        printHelp();
+        return getHelpMessage();
     }
 
     if (options._args.length > 1) {
-        console.log("Too many arguments");
-        process.exit(1);
+        throw "too many arguments";
     }
 
     // TODO: Will need to check for binary files (see `getEncoding`)
     const fileName = options._args[0] as string;
     const content = await util.promisify(fs.readFile)(fileName, "utf8")
     const parsed = await anyjson.decode(removeLeadingDot(path.extname(fileName)), content)
-    console.log(await anyjson.encode(parsed, 'json'));
+    return await anyjson.encode(parsed, 'json');
 }
 
-main().catch(error => console.error(error));
+main(process.argv)
+    .then(s => console.log(s))
+    .catch(error => {
+        console.error(error);
+        process.exit(2);
+    });
