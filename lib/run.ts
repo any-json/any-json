@@ -38,7 +38,7 @@ const inputConfiguration: dashdash.ParseConfiguration =
             {
                 name: "format",
                 type: "string",
-                help: "Specifies the format of the input (assumed by file extension when not specified).",
+                help: "Specifies the format of the input (assumed by file extension when not provided).",
                 helpArg: "FORMAT"
             }
         ]

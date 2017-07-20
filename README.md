@@ -1,38 +1,43 @@
 # any-json
 
+any-json can be used to convert (almost) anything to and from JSON.
+
 [![NPM version](https://img.shields.io/npm/v/any-json.svg?style=flat-square)](http://www.npmjs.com/package/any-json)
 
-# Usage
-
-// TODO: Update command line interface
-
-```
-usage: any-json [OPTIONS] [INPUT]
-
-  any-json can be used to convert (almost) anything to JSON.
-  This version supports:
-  cson, csv, hjson, ini, json, json5, xls, xlsx, xml, yaml
-
-  any-json will read the given input file or read from stdin.
-
-  Output format:
-    -j: will output as formatted JSON (default).
-    -c: will output as JSON (compact).
-    -h: will output as Hjson (Human JSON).
-
-  Optional input format (usually the file extension):
-    -format=FORMAT
-
-  {-?|-help} shows this help.
-```
-
-# Install from npm
+## Install from npm
 
 ```
 npm install any-json -g
 ```
 
-# Data Safety
+# Usage
+
+## Command Line
+
+```
+usage: any-json FILE [options]
+
+any-json can be used to convert (almost) anything to JSON.
+
+This version supports:
+    cson, csv, hjson, ini, json, json5, yaml
+
+options:
+    -h, --help       Prints this help and exits.
+    --version        Prints version information and exits.
+    --format=FORMAT  Specifies the format of the input (assumed by file
+                     extension when not specified).
+```
+
+## API
+
+```js
+const anyjson = require('any-json')
+const obj = anyjson.decode(/* string to parse */, /* format (string) */)
+const str = anyjson.encode(/* object to encode */, /* desired format (string) */)
+```
+
+# Formats and Data Safety
 
 ## Safe
 
@@ -60,8 +65,10 @@ These formats are conceptually different and only work on a limited basis.  With
 
 Tabular formats:
 - csv
-- xls
-- xlsx
+
+# Contributing
+
+Contributions welcome!  If **any-json** is not meeting your needs or your have an idea for an improvement, please open an issue or create a pull request.
 
 # History
 
