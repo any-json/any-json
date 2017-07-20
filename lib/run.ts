@@ -38,7 +38,7 @@ const inputConfiguration =
         ]
     };
 
-async function main(argv: string[]) {
+export async function main(argv: string[]) {
     const parser = dashdash.createParser(inputConfiguration);
 
     function getHelpMessage() {
@@ -56,7 +56,7 @@ ${help}`
             return parser.parse(argv);
         }
         catch (err) {
-            throw err.message;
+            throw err;
         }
     }();
 
@@ -64,7 +64,7 @@ ${help}`
         return `any-json version ${version}`;
     }
 
-    if (options.help || process.argv.length <= 2) {
+    if (options.help || argv.length <= 2) {
         return getHelpMessage();
     }
 
@@ -79,9 +79,11 @@ ${help}`
     return await anyjson.encode(parsed, 'json');
 }
 
-main(process.argv)
-    .then(s => console.log(s))
-    .catch(error => {
-        console.error(error);
-        process.exit(2);
-    });
+if (require.main === module) {
+    main(process.argv)
+        .then(s => console.log(s))
+        .catch(error => {
+            console.error(error);
+            process.exit(2);
+        });
+}
