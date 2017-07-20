@@ -86,7 +86,7 @@ ${help}`
 
     // TODO: Will need to check for binary files (see `getEncoding`)
     const fileContents = await util.promisify(fs.readFile)(fileName, "utf8")
-    const parsed = await anyjson.decode(format, fileContents)
+    const parsed = await anyjson.decode(fileContents, format)
     return await anyjson.encode(parsed, 'json');
 }
 

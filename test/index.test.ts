@@ -70,7 +70,7 @@ function testDecode(formats: string[]) {
         test(format, async function () {
           const expected = await getExpectedJson(format)
           const contents = await readFile(path.join(__dirname, 'fixtures', 'out', 'product-set.' + format), 'utf8')
-          const actual = await anyjson.decode(format, contents);
+          const actual = await anyjson.decode(contents, format);
           return assert.deepEqual(actual, expected)
         })
       }
