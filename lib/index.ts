@@ -172,11 +172,11 @@ const codecs = new Map([
   new YamlConverter()
 ].map(c => [c.name, c] as [string, FormatConversion]))
 
-export async function decode(text: string, format: string, reviver?: (key: any, value: any) => any): Promise<any> {
+export async function decode(text: string, format: string): Promise<any> {
   const codec = codecs.get(format)
 
   if (codec) {
-    return codec.decode(text, reviver);
+    return codec.decode(text, undefined);
   }
 
   throw new Error("Unknown format " + format + "!");
