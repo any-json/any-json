@@ -19,20 +19,6 @@ import * as XLSX from 'xlsx';
 import * as xml2js from 'xml2js';
 import * as yaml from 'js-yaml';
 
-function removeLeadingDot(formatOrExtension: string) {
-  if (formatOrExtension && formatOrExtension[0] === ".") return formatOrExtension.substr(1);
-  else return formatOrExtension;
-}
-
-function getEncoding(format: string) {
-  format = removeLeadingDot(format);
-  switch (format) {
-    case "xlsx": return "binary";
-    case "xls": return "binary";
-    default: return "utf8";
-  }
-}
-
 interface FormatConversion {
   readonly name: string
   encode(value: any): Promise<string | Buffer>
@@ -185,21 +171,6 @@ const codecs = new Map([
   new XmlConverter(),
   new YamlConverter()
 ].map(c => [c.name, c] as [string, FormatConversion]))
-
-/**
- * Parse the given text with the specified format
- * @param text The original text
- * @param format The original format
- * @returns The parsed object
- */
-export async function convert(text: string, format: string): Promise<any> {
-  format = removeLeadingDot(format);
-  if (!format) throw new Error("Missing format!");
-
-  var parse = await decode(format.toLowerCase(), text);
-  if (parse) return parse(text);
-  else throw new Error("Unknown format " + format + "!");
-}
 
 export async function decode(format: string, text: string, reviver?: (key: any, value: any) => any): Promise<any> {
   const codec = codecs.get(format)
