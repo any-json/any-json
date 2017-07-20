@@ -1,8 +1,8 @@
 {
   "name": "any-json",
   "description": "Convert (almost) anything to JSON.",
-  "main": "./lib/anyjson.js",
-  "typing": "./lib/anyjson.d.ts",
+  "main": "./out/lib/index.js",
+  "typing": "./out/lib/index.d.ts",
   "author": "Christian Zangl",
   "version": "3.0.0",
   "keywords": [
@@ -15,7 +15,7 @@
     "ini"
   ],
   "bin": {
-    "any-json": "./bin/any-json"
+    "any-json": "out/lib/run.js"
   },
   "homepage": "https://github.com/laktak/any-json",
   "repository": {
@@ -28,7 +28,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && cp -Rf src/test/fixtures lib/test/ && mocha --ui tdd lib/test/",
+    "test": "npm run build && cp -Rf test/fixtures out/test/ && mocha --ui tdd out/test/",
     "prepublish": "npm run build"
   },
   "dependencies": {

@@ -1,5 +1,5 @@
 import "mocha"
-import * as anyjson from '../anyjson'
+import * as anyjson from '../lib'
 import * as fs from 'fs'
 import promisify = require('util.promisify');
 const writeFile = promisify(fs.writeFile)

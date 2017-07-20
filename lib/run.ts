@@ -2,7 +2,7 @@
 
 import * as dashdash from "dashdash";
 import * as fs from "fs";
-import * as anyjson from "../anyjson";
+import * as anyjson from "./";
 import * as path from "path";
 import * as util from "util";
 require('util.promisify/shim')();
