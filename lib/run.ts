@@ -36,7 +36,7 @@ const inputConfiguration: dashdash.ParseConfiguration =
                 help: "Prints version information and exits."
             },
             {
-                name: "format",
+                name: "input-format",
                 type: "string",
                 help: "Specifies the format of the input (assumed by file extension when not provided).",
                 helpArg: "FORMAT"
@@ -82,7 +82,7 @@ ${help}`
     }
 
     const fileName = options._args[0] as string;
-    const format = options.format || removeLeadingDot(path.extname(fileName)).toLowerCase();
+    const format = options.input_format || removeLeadingDot(path.extname(fileName)).toLowerCase();
 
     // TODO: Will need to check for binary files (see `getEncoding`)
     const fileContents = await util.promisify(fs.readFile)(fileName, "utf8")

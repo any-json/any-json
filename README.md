@@ -23,18 +23,18 @@ This version supports:
     cson, csv, hjson, ini, json, json5, yaml
 
 options:
-    -h, --help       Prints this help and exits.
-    --version        Prints version information and exits.
-    --format=FORMAT  Specifies the format of the input (assumed by file
-                     extension when not specified).
+    -h, --help             Prints this help and exits.
+    --version              Prints version information and exits.
+    --input-format=FORMAT  Specifies the format of the input (assumed by file
+                           extension when not provided).
 ```
 
 ## API
 
 ```js
 const anyjson = require('any-json')
-const obj = anyjson.decode(/* string to parse */, /* format (string) */)
-const str = anyjson.encode(/* object to encode */, /* desired format (string) */)
+const obj = await anyjson.decode(/* string to parse */, /* format (string) */)
+const str = await anyjson.encode(/* object to encode */, /* desired format (string) */)
 ```
 
 # Formats and Data Safety

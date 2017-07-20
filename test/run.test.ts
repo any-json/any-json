@@ -52,7 +52,7 @@ suite("Command Line Application", () => {
 
     test("reading JSON as YAML", async () => {
         const file = path.join(__dirname, 'fixtures', 'in', 'product-set.json');
-        const result = await main(args(file +" --format=yaml")) as string;
+        const result = await main(args(file +" --input-format=yaml")) as string;
         assert.deepEqual(JSON.parse(result), JSON.parse(fs.readFileSync(file, 'utf8')));
     })
 })
