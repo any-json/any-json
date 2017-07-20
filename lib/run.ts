@@ -22,7 +22,7 @@ function getEncoding(format: string) {
     }
 }
 
-const inputConfiguration =
+const inputConfiguration: dashdash.ParseConfiguration =
     {
         options: [
             {
@@ -34,6 +34,12 @@ const inputConfiguration =
                 name: "version",
                 type: "bool",
                 help: "Prints version information and exits."
+            },
+            {
+                name: "format",
+                type: "string",
+                help: "Specifies the format of the input (assumed by file extension when not specified).",
+                helpArg: "FORMAT"
             }
         ]
     };
@@ -45,7 +51,10 @@ export async function main(argv: string[]) {
         const help = parser.help();
         return `usage: any-json FILE [options]
 
-any-json can be used to convert (almost) anything to or from JSON.
+any-json can be used to convert (almost) anything to JSON.
+
+This version supports:
+    cson, csv, hjson, ini, json, json5, yaml
 
 options:
 ${help}`
@@ -72,10 +81,12 @@ ${help}`
         throw "too many arguments";
     }
 
-    // TODO: Will need to check for binary files (see `getEncoding`)
     const fileName = options._args[0] as string;
-    const content = await util.promisify(fs.readFile)(fileName, "utf8")
-    const parsed = await anyjson.decode(removeLeadingDot(path.extname(fileName)), content)
+    const format = options.format || removeLeadingDot(path.extname(fileName)).toLowerCase();
+
+    // TODO: Will need to check for binary files (see `getEncoding`)
+    const fileContents = await util.promisify(fs.readFile)(fileName, "utf8")
+    const parsed = await anyjson.decode(format, fileContents)
     return await anyjson.encode(parsed, 'json');
 }
 
