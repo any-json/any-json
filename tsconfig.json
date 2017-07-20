@@ -2,7 +2,7 @@
     "compilerOptions": {
         "declaration": true,
         "outDir": "./lib",
-        "target": "es6",
+        "target": "es2015",
         "module": "commonjs",
         "strict": true,
         "baseUrl": "types",
