@@ -34,6 +34,8 @@ suite("Command Line Application", () => {
     await testIsHelpMessage("--version");
   })
 
+  const basicJsonFile = path.join(__dirname, 'fixtures', 'in', 'product-set.json');
+
   suite("convert", () => {
     test("too many args", async () => {
       try {
@@ -45,34 +47,40 @@ suite("Command Line Application", () => {
       }
     })
 
-    const file = path.join(__dirname, 'fixtures', 'in', 'product-set.json');
-
     test("explicit convert command", async () => {
-      const result = await main(args(`convert ${file}`)) as string;
-      assert.deepEqual(JSON.parse(result), JSON.parse(fs.readFileSync(file, 'utf8')));
+      const result = await main(args(`convert ${basicJsonFile}`)) as string;
+      assert.deepEqual(JSON.parse(result), JSON.parse(fs.readFileSync(basicJsonFile, 'utf8')));
     })
 
     test("reading JSON", async () => {
-      const result = await main(args(file)) as string;
-      assert.deepEqual(JSON.parse(result), JSON.parse(fs.readFileSync(file, 'utf8')));
+      const result = await main(args(basicJsonFile)) as string;
+      assert.deepEqual(JSON.parse(result), JSON.parse(fs.readFileSync(basicJsonFile, 'utf8')));
     })
 
     test("reading JSON as YAML", async () => {
-      const result = await main(args(file + " --input-format=yaml")) as string;
-      assert.deepEqual(JSON.parse(result), JSON.parse(fs.readFileSync(file, 'utf8')));
+      const result = await main(args(basicJsonFile + " --input-format=yaml")) as string;
+      assert.deepEqual(JSON.parse(result), JSON.parse(fs.readFileSync(basicJsonFile, 'utf8')));
     })
 
     test("output as YAML", async () => {
-      const result = await main(args(file + " --output-format=yaml")) as string;
+      const result = await main(args(basicJsonFile + " --output-format=yaml")) as string;
       assert.strictEqual(result, fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.yaml'), 'utf8'));
     })
 
     test("output to file", async () => {
       const outputFile = path.join("out", "test.cson")
-      const result = await main(args(`${file} ${outputFile}`)) as string;
+      const result = await main(args(`${basicJsonFile} ${outputFile}`)) as string;
       assert.strictEqual(result, "");
       const written = fs.readFileSync(outputFile, 'utf8')
       assert.strictEqual(written, fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.cson'), 'utf8'));
+    })
+  });
+
+  suite("combine", () => {
+    test("to standard out", async () => {
+      const result = await main(args(`combine ${basicJsonFile} ${basicJsonFile}`)) as string;
+      const singleEntry = JSON.parse(fs.readFileSync(basicJsonFile, 'utf8'));
+      assert.deepEqual(JSON.parse(result), [singleEntry, singleEntry]);
     })
   });
 })

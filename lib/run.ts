@@ -7,6 +7,8 @@ import * as path from "path";
 import * as util from "util";
 require('util.promisify/shim')();
 
+const readFile = util.promisify(fs.readFile);
+
 const version = require("../../package.json").version;
 
 function getFormatFromFileName(fileName?: string): string | undefined {
@@ -59,7 +61,7 @@ const convertConfiguration: dashdash.ParserConfiguration =
 
 export async function main(argv: string[]) {
 
-    const commands = ['convert'];
+    const commands = ['convert', "combine"];
 
     const commandSpecified = commands.indexOf(argv[2]) >= 0;
     const command = commandSpecified ? argv[2] : "convert";
@@ -109,7 +111,7 @@ ${help}`
             const format = options.input_format || getFormatFromFileName(fileName);
 
             // TODO: Will need to check for binary files (see `getEncoding`)
-            const fileContents = await util.promisify(fs.readFile)(fileName, "utf8")
+            const fileContents = await readFile(fileName, "utf8")
 
             const parsed = await anyjson.decode(fileContents, format)
 
@@ -120,6 +122,42 @@ ${help}`
                 await util.promisify(fs.writeFile)(outputFileName, result, "utf8")
                 return "";
             }
+            return result;
+        }
+        case "combine": {
+            const parser = new dashdash.Parser({
+                options: [{
+                    name: 'out',
+                    type: 'string',
+                    help: "The output file.",
+                    helpArg: "OUT_FILE"
+                }, {
+                    name: "input-format",
+                    type: "string",
+                    help: "Specifies the format of the input (assumed by file extension when not provided).",
+                    helpArg: "FORMAT"
+                }, {
+                    name: "output-format",
+                    type: "string",
+                    help: "Specifies the format of the output (default: json or assumed by file extension when available).",
+                    helpArg: "FORMAT",
+                }]
+            })
+
+            const options = parser.parse({ argv, slice: 3 });
+
+            const items = await Promise.all(
+                options._args.map(async fileName => {
+                    // TODO: Will need to check for binary files (see `getEncoding`)
+                    const format = options.input_format || getFormatFromFileName(fileName);
+                    const fileContents = await readFile(fileName, 'utf8') as string
+                    return await anyjson.decode(fileContents, format)
+                })
+            )
+
+            const outputFileName = options.out;
+            const result = await anyjson.encode(items, options.output_format || getFormatFromFileName(outputFileName) || "json");
+
             return result;
         }
     }
