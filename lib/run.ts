@@ -30,6 +30,21 @@ function getEncoding(format: string) {
     }
 }
 
+const generalOptions =
+    [
+        {
+            names: ["help", 'h'],
+            type: "bool",
+            help: "Prints this help and exits."
+        },
+        {
+            name: "version",
+            type: "bool",
+            help: "Prints version information and exits."
+        }
+    ]
+
+
 const convertConfiguration: dashdash.ParserConfiguration =
     {
         options: [
@@ -59,6 +74,25 @@ const convertConfiguration: dashdash.ParserConfiguration =
         ]
     };
 
+const combineConfiguration: dashdash.ParserConfiguration = {
+    options: [{
+        name: 'out',
+        type: 'string',
+        help: "The output file.",
+        helpArg: "OUT_FILE"
+    }, {
+        name: "input-format",
+        type: "string",
+        help: "Specifies the format of the input (assumed by file extension when not provided).",
+        helpArg: "FORMAT"
+    }, {
+        name: "output-format",
+        type: "string",
+        help: "Specifies the format of the output (default: json or assumed by file extension when available).",
+        helpArg: "FORMAT",
+    }]
+}
+
 export async function main(argv: string[]) {
 
     const commands = ['convert', "combine"];
@@ -66,10 +100,8 @@ export async function main(argv: string[]) {
     const commandSpecified = commands.indexOf(argv[2]) >= 0;
     const command = commandSpecified ? argv[2] : "convert";
 
-    const convertParser = dashdash.createParser(convertConfiguration);
-
     function getHelpMessage() {
-        const help = convertParser.help();
+        const help = new dashdash.Parser(convertConfiguration).help();
         return `usage: any-json [command] FILE [options] [OUT_FILE]
 
 any-json can be used to convert (almost) anything to JSON.
@@ -78,19 +110,16 @@ This version supports:
     cson, csv, hjson, ini, json, json5, yaml
 
 command:
-    convert (default when none specified)
+    convert    convert between formats (default when none specified)
+    combine    combine multiple documents
 
 options:
 ${help}`
     }
 
     const options = function () {
-        try {
-            return convertParser.parse({ argv, slice: commandSpecified ? 3 : 2 });
-        }
-        catch (err) {
-            throw err;
-        }
+        const parser = dashdash.createParser({ options: generalOptions, allowUnknown: true });
+        return parser.parse(argv);
     }();
 
     if (options.version) {
@@ -101,8 +130,21 @@ ${help}`
         return getHelpMessage();
     }
 
+    async function convert(value: any, options: any, outputFileName?: string) {
+        const result = await anyjson.encode(value, options.output_format || getFormatFromFileName(outputFileName) || "json");
+
+        if (outputFileName) {
+            await util.promisify(fs.writeFile)(outputFileName, result, "utf8")
+            return "";
+        }
+        return result;
+    }
+
     switch (command) {
         case "convert": {
+            const parser = dashdash.createParser(convertConfiguration);
+            const options = parser.parse({ argv, slice: commandSpecified ? 3 : 2 });
+
             if (options._args.length > 2) {
                 throw "too many arguments";
             }
@@ -116,33 +158,10 @@ ${help}`
             const parsed = await anyjson.decode(fileContents, format)
 
             const outputFileName = options._args[1]
-            const result = await anyjson.encode(parsed, options.output_format || getFormatFromFileName(outputFileName) || "json");
-
-            if (outputFileName) {
-                await util.promisify(fs.writeFile)(outputFileName, result, "utf8")
-                return "";
-            }
-            return result;
+            return await convert(parsed, options, outputFileName);
         }
         case "combine": {
-            const parser = new dashdash.Parser({
-                options: [{
-                    name: 'out',
-                    type: 'string',
-                    help: "The output file.",
-                    helpArg: "OUT_FILE"
-                }, {
-                    name: "input-format",
-                    type: "string",
-                    help: "Specifies the format of the input (assumed by file extension when not provided).",
-                    helpArg: "FORMAT"
-                }, {
-                    name: "output-format",
-                    type: "string",
-                    help: "Specifies the format of the output (default: json or assumed by file extension when available).",
-                    helpArg: "FORMAT",
-                }]
-            })
+            const parser = new dashdash.Parser(combineConfiguration)
 
             const options = parser.parse({ argv, slice: 3 });
 
@@ -156,9 +175,7 @@ ${help}`
             )
 
             const outputFileName = options.out;
-            const result = await anyjson.encode(items, options.output_format || getFormatFromFileName(outputFileName) || "json");
-
-            return result;
+            return await convert(items, options, outputFileName);
         }
     }
 

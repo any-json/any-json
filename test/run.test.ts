@@ -3,6 +3,7 @@ import * as chai from 'chai'
 const assert = chai.assert;
 
 import { main } from '../lib/run'
+import * as anyjson from '../lib'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -81,6 +82,15 @@ suite("Command Line Application", () => {
       const result = await main(args(`combine ${basicJsonFile} ${basicJsonFile}`)) as string;
       const singleEntry = JSON.parse(fs.readFileSync(basicJsonFile, 'utf8'));
       assert.deepEqual(JSON.parse(result), [singleEntry, singleEntry]);
+    })
+
+    test("to file", async () => {
+      const outputFile = 'out/test.yaml'
+      const result = await main(args(`combine ${basicJsonFile} ${basicJsonFile} --out=${outputFile}`)) as string;
+      assert.strictEqual(result, "");
+      const written = fs.readFileSync(outputFile, 'utf8')
+      const singleEntry = JSON.parse(fs.readFileSync(basicJsonFile, 'utf8'));
+      assert.deepEqual(await anyjson.decode(written, 'yaml'), [singleEntry, singleEntry]);
     })
   });
 })
