@@ -44,6 +44,12 @@ suite("Command Line Application", () => {
         }
     })
 
+    test("explicit convert command", async () =>{
+        const file = path.join(__dirname, 'fixtures', 'in', 'product-set.json');
+        const result = await main(args(`convert ${file}`)) as string;
+        assert.deepEqual(JSON.parse(result), JSON.parse(fs.readFileSync(file, 'utf8')));
+    })
+
     test("reading JSON", async () => {
         const file = path.join(__dirname, 'fixtures', 'in', 'product-set.json');
         const result = await main(args(file)) as string;

@@ -15,16 +15,21 @@ npm install any-json -g
 ## Command Line
 
 ```
-usage: any-json FILE [options]
+usage: any-json [command] FILE [options]
 
 any-json can be used to convert (almost) anything to JSON.
 
 This version supports:
     cson, csv, hjson, ini, json, json5, yaml
 
+command:
+    convert (default when none specified)
+
 options:
     -h, --help             Prints this help and exits.
     --version              Prints version information and exits.
+
+  convert options:
     --input-format=FORMAT  Specifies the format of the input (assumed by file
                            extension when not provided).
 ```

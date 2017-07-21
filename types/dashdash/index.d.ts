@@ -6,13 +6,13 @@
 /// <reference types="node" />
 
 export class Parser {
-    constructor(config: ParseConfiguration);
+    constructor(config: ParserConfiguration);
 
     bashCompletion(args: BashCompletionConfiguration): string;
 
     help(config?: HelpConfiguration): string;
 
-    parse(inputs?: string[]): Results;
+    parse(inputs?: string[] | ParsingConfiguration): Results;
 }
 
 export function addOptionType(optionType: OptionType): void;
@@ -21,11 +21,11 @@ export function bashCompletionFromOptions(args: BashCompletionConfiguration): st
 
 export function bashCompletionSpecFromOptions(args: BashCompletionSpecConfiguration): string;
 
-export function createParser(config: ParseConfiguration): Parser;
+export function createParser(config: ParserConfiguration): Parser;
 
 export function getOptionType(name: string): OptionType;
 
-export function parse(config: ParseConfiguration): Results;
+export function parse(config: ParsingConfiguration): Results;
 
 export interface Results {
     [key: string]: any;
@@ -46,7 +46,7 @@ export function synopsisFromOpt(o: Option): string;
 
 export type Option = OptionWithoutAliases | OptionWithAliases;
 
-export interface ParseConfiguration {
+export interface ParsingConfiguration {
     /**
      * The argv to parse. Defaults to `process.argv`.
      */
@@ -63,6 +63,35 @@ export interface ParseConfiguration {
     env?: any; // NodeJS.ProcessEnv;
 
     options?: Array<Option | Group>;
+}
+
+export interface ParserConfiguration {
+    /**
+     * Array of option specs.
+     */
+    options: Array<Option | Group>;
+
+    /**
+     * Whether to throw on unknown options.
+     * If false, then unknown args are included in the _args array.
+     * Default: false
+     */
+    allowUnknown?: boolean;
+
+    /**
+     * Whether to allow interspersed arguments (non-options) and options.
+     *
+     * E.g.:
+     *   node tool.js arg1 arg2 -v
+     *
+     * '-v' is after some args here. If `interspersed: false` then '-v'
+     *  would not be parsed out. Note that regardless of `interspersed`
+     * the presence of '--' will stop option parsing, as all good
+     * option parsers should.
+     *
+     * Default: true
+     */
+    interspersed?: boolean;
 }
 
 export interface OptionWithoutAliases extends OptionBase {
@@ -226,34 +255,34 @@ export interface HelpConfiguration {
      * Note that reflow is just done on whitespace so a long token in the option help can overflow maxCol.
      * Default: 80
      */
-    maxCo?: number;
+    maxCol?: number;
 
     /**
      * If not set a reasonable value will be determined between minHelpCol and maxHelpCol.
      */
-    helpCo?: number;
+    helpCol?: number;
 
     /**
      * Default: 20
      */
-    minHelpCo?: number;
+    minHelpCol?: number;
 
     /**
      * Default: 40
      */
-    maxHelpCo?: number;
+    maxHelpCol?: number;
 
     /**
      * Set to `false` to have option `help` strings not be textwrapped to the helpCol..maxCol range.
      * Default: true
      */
-    helpWra?: boolean;
+    helpWrap?: boolean;
 
     /**
      * If the option has associated environment variables (via the env option spec attribute), then append mentioned of those envvars to the help string.
      * Default: false
      */
-    includeEn?: boolean;
+    includeEnv?: boolean;
 
     /**
      * If the option has a default value (via the default option spec attribute, or a default on the option's type), then a "Default: VALUE" string will be appended to the help string.

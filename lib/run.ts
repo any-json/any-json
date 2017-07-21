@@ -22,7 +22,7 @@ function getEncoding(format: string) {
     }
 }
 
-const inputConfiguration: dashdash.ParseConfiguration =
+const convertConfiguration: dashdash.ParserConfiguration =
     {
         options: [
             {
@@ -35,6 +35,7 @@ const inputConfiguration: dashdash.ParseConfiguration =
                 type: "bool",
                 help: "Prints version information and exits."
             },
+            {group: "convert options"},
             {
                 name: "input-format",
                 type: "string",
@@ -45,16 +46,25 @@ const inputConfiguration: dashdash.ParseConfiguration =
     };
 
 export async function main(argv: string[]) {
-    const parser = dashdash.createParser(inputConfiguration);
+
+    const commands = ['convert'];
+
+    const commandSpecified = commands.indexOf(argv[2]) >= 0;
+    const command = commandSpecified ? argv[2] : "convert";
+
+    const convertParser = dashdash.createParser(convertConfiguration);
 
     function getHelpMessage() {
-        const help = parser.help();
-        return `usage: any-json FILE [options]
+        const help = convertParser.help();
+        return `usage: any-json [command] FILE [options]
 
 any-json can be used to convert (almost) anything to JSON.
 
 This version supports:
     cson, csv, hjson, ini, json, json5, yaml
+
+command:
+    convert (default when none specified)
 
 options:
 ${help}`
@@ -62,7 +72,7 @@ ${help}`
 
     const options = function () {
         try {
-            return parser.parse(argv);
+            return convertParser.parse({ argv, slice: commandSpecified ? 3 : 2 });
         }
         catch (err) {
             throw err;
