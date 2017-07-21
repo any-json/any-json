@@ -36,6 +36,13 @@ any-json *.json
 any-json *.yaml -out=data.csv
 ```
 
+### split
+
+```bash
+# Creates a JSON file for each row in the CSV where the name is based on the `product_id` column
+any-json split products.csv prod-{product_id}.json
+```
+
 ## Formats and Data Safety
 
 ### Safe

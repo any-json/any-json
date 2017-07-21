@@ -5,6 +5,9 @@ import * as fs from "fs";
 import * as anyjson from "./";
 import * as path from "path";
 import * as util from "util";
+import formatUnicorn = require("format-unicorn/safe");
+import {EOL} from "os";
+
 require('util.promisify/shim')();
 
 const readFile = util.promisify(fs.readFile);
@@ -78,7 +81,7 @@ const combineConfiguration: dashdash.ParserConfiguration =
 
 export async function main(argv: string[]) {
 
-    const commands = ['convert', "combine"];
+    const commands = ["convert", "combine", "split"];
 
     const commandSpecified = commands.indexOf(argv[2]) >= 0;
     const command = commandSpecified ? argv[2] : "convert";
@@ -102,6 +105,7 @@ This version supports:
 command:
     convert    convert between formats (default when none specified)
     combine    combine multiple documents
+    split      spilts a document (containing an array) into multiple documents
 
 options:
 ${help}`
@@ -166,6 +170,35 @@ ${help}`
 
             const outputFileName = options.out;
             return await convert(items, options, outputFileName);
+        }
+        case "split": {
+            const parser = dashdash.createParser(convertConfiguration);
+            if (options._args.length < 3) {
+                throw "too few arguments";
+            }
+
+            const fileName = argv[3];
+            const outputPattern = argv[4];
+
+            const format = options.input_format || getFormatFromFileName(fileName);
+
+            // TODO: Will need to check for binary files (see `getEncoding`)
+            const fileContents = await readFile(fileName, "utf8")
+
+            const array = await anyjson.decode(fileContents, format) as any[]
+
+            if (!Array.isArray(array)){
+                throw "split only works on arrays";
+            }
+
+            const writtenFiles = await Promise.all(
+                array.map(async (obj: any) => {
+                const fileName = formatUnicorn(outputPattern, obj);
+                await convert(obj, options, fileName)
+                return `${fileName} written`;
+            }))
+
+            return writtenFiles.join(EOL);
         }
     }
 
