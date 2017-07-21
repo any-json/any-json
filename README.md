@@ -10,12 +10,26 @@ any-json can be used to convert (almost) anything to and from JSON.
 npm install any-json -g
 ```
 
-# Usage
+## Examples
 
-## Command Line
+```bash
+# Prints as JSON to standard out
+any-json package.json5
+
+# Writes the contents from `package.json` to `package.json5` as JSON5
+any-json package.json package.json5
+
+# Same as above (the `convert` command is default).
+any-json convert package.json5
+any-json convert package.json package.json5
+```
+
+## Usage
+
+### Command Line
 
 ```
-usage: any-json [command] FILE [options]
+usage: any-json [command] FILE [options] [OUT_FILE]
 
 any-json can be used to convert (almost) anything to JSON.
 
@@ -26,15 +40,17 @@ command:
     convert (default when none specified)
 
 options:
-    -h, --help             Prints this help and exits.
-    --version              Prints version information and exits.
+    -h, --help              Prints this help and exits.
+    --version               Prints version information and exits.
 
   convert options:
-    --input-format=FORMAT  Specifies the format of the input (assumed by file
-                           extension when not provided).
+    --input-format=FORMAT   Specifies the format of the input (assumed by file
+                            extension when not provided).
+    --output-format=FORMAT  Specifies the format of the output (default: json or
+                            assumed by file extension when available).
 ```
 
-## API
+### API
 
 ```js
 const anyjson = require('any-json')
@@ -42,9 +58,9 @@ const obj = await anyjson.decode(/* string to parse */, /* format (string) */)
 const str = await anyjson.encode(/* object to encode */, /* desired format (string) */)
 ```
 
-# Formats and Data Safety
+## Formats and Data Safety
 
-## Safe
+### Safe
 
 When only JSON features are used, conversion should not result in any data loss when using these formats.
 
@@ -54,7 +70,7 @@ When only JSON features are used, conversion should not result in any data loss 
 - json5
 - yaml
 
-## Problematic
+### Problematic
 
 Some loss of information may occur.  Improved parsers/serializers could provide better compatibility, but implementation is provided as-is.  Known issues are listed below the format.
 
@@ -64,18 +80,18 @@ Some loss of information may occur.  Improved parsers/serializers could provide 
 - xml
   - It cannot parse its own output (node-xml2js#391)[https://github.com/Leonidas-from-XIV/node-xml2js/issues/391]
 
-## Limited
+### Limited
 
 These formats are conceptually different and only work on a limited basis.  With effort, conventions could be established to provide a more complete transfer but there will be some impedance.
 
 Tabular formats:
 - csv
 
-# Contributing
+## Contributing
 
 Contributions welcome!  If **any-json** is not meeting your needs or your have an idea for an improvement, please open an issue or create a pull request.
 
-# History
+## History
 
 - v3 Re-written to be Promise-based and bi-directional (serialization capabilities as well as parsing).
 - v2 removed the experimental/unreliable format detection.
