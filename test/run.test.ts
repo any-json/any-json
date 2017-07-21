@@ -93,4 +93,35 @@ suite("Command Line Application", () => {
       assert.deepEqual(await anyjson.decode(written, 'yaml'), [singleEntry, singleEntry]);
     })
   });
+
+  suite("split", () => {
+    test("too few arguments", async () => {
+      try {
+        const result = await main(args("split file.csv"));
+        assert.fail();
+      }
+      catch (error) {
+        assert.strictEqual(error, "too few arguments");
+      }
+    })
+
+    test("not an array", async () => {
+      try {
+        const result = await main(args(`split package.json used-parameter`));
+        assert.fail();
+      }
+      catch (error) {
+        assert.strictEqual(error, "split only works on arrays");
+      }
+    })
+
+    test("can split flat csv", async () => {
+      const file = path.join(__dirname, 'fixtures', 'out', 'product-set.csv');
+
+      const result = await main(args(`split ${file} out/{id}.json`));
+      assert.strictEqual(result,
+        `out/2.json written
+out/3.json written`);
+    })
+  });
 })
