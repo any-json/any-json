@@ -41,6 +41,13 @@ const convertConfiguration: dashdash.ParserConfiguration =
                 type: "string",
                 help: "Specifies the format of the input (assumed by file extension when not provided).",
                 helpArg: "FORMAT"
+            },
+            {
+                name: "output-format",
+                type: "string",
+                help: "Specifies the format of the output (default: json).",
+                helpArg: "json",
+                default: "json"
             }
         ]
     };
@@ -97,7 +104,7 @@ ${help}`
     // TODO: Will need to check for binary files (see `getEncoding`)
     const fileContents = await util.promisify(fs.readFile)(fileName, "utf8")
     const parsed = await anyjson.decode(fileContents, format)
-    return await anyjson.encode(parsed, 'json');
+    return await anyjson.encode(parsed, options.output_format);
 }
 
 if (require.main === module) {

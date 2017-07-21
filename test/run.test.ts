@@ -44,7 +44,7 @@ suite("Command Line Application", () => {
         }
     })
 
-    test("explicit convert command", async () =>{
+    test("explicit convert command", async () => {
         const file = path.join(__dirname, 'fixtures', 'in', 'product-set.json');
         const result = await main(args(`convert ${file}`)) as string;
         assert.deepEqual(JSON.parse(result), JSON.parse(fs.readFileSync(file, 'utf8')));
@@ -58,7 +58,13 @@ suite("Command Line Application", () => {
 
     test("reading JSON as YAML", async () => {
         const file = path.join(__dirname, 'fixtures', 'in', 'product-set.json');
-        const result = await main(args(file +" --input-format=yaml")) as string;
+        const result = await main(args(file + " --input-format=yaml")) as string;
         assert.deepEqual(JSON.parse(result), JSON.parse(fs.readFileSync(file, 'utf8')));
+    })
+
+    test("output as YAML", async () => {
+        const file = path.join(__dirname, 'fixtures', 'in', 'product-set.json');
+        const result = await main(args(file + " --output-format=yaml")) as string;
+        assert.strictEqual(result, fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.yaml'), 'utf8'));
     })
 })
