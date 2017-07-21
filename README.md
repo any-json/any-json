@@ -12,6 +12,8 @@ npm install any-json -g
 
 ## Examples
 
+### convert
+
 ```bash
 # Prints as JSON to standard out
 any-json package.json5
@@ -24,38 +26,14 @@ any-json convert package.json5
 any-json convert package.json package.json5
 ```
 
-## Usage
+### combine
 
-### Command Line
+```bash
+# Prints an JSON array containing an item for every JSON file in directory
+any-json *.json
 
-```
-usage: any-json [command] FILE [options] [OUT_FILE]
-
-any-json can be used to convert (almost) anything to JSON.
-
-This version supports:
-    cson, csv, hjson, ini, json, json5, yaml
-
-command:
-    convert (default when none specified)
-
-options:
-    -h, --help              Prints this help and exits.
-    --version               Prints version information and exits.
-
-  convert options:
-    --input-format=FORMAT   Specifies the format of the input (assumed by file
-                            extension when not provided).
-    --output-format=FORMAT  Specifies the format of the output (default: json or
-                            assumed by file extension when available).
-```
-
-### API
-
-```js
-const anyjson = require('any-json')
-const obj = await anyjson.decode(/* string to parse */, /* format (string) */)
-const str = await anyjson.encode(/* object to encode */, /* desired format (string) */)
+# Create a csv from a collection of flat YAML files
+any-json *.yaml -out=data.csv
 ```
 
 ## Formats and Data Safety
@@ -86,6 +64,42 @@ These formats are conceptually different and only work on a limited basis.  With
 
 Tabular formats:
 - csv
+
+## Usage
+
+### Command Line
+
+```
+usage: any-json [command] FILE [options] [OUT_FILE]
+
+any-json can be used to convert (almost) anything to JSON.
+
+This version supports:
+    cson, csv, hjson, ini, json, json5, yaml
+
+command:
+    convert    convert between formats (default when none specified)
+    combine    combine multiple documents
+
+options:
+    -h, --help              Prints this help and exits.
+    --version               Prints version information and exits.
+    --input-format=FORMAT   Specifies the format of the input (assumed by file
+                            extension when not provided).
+    --output-format=FORMAT  Specifies the format of the output (default: json or
+                            assumed by file extension when available).
+
+  combine (additional options):
+    --out=OUT_FILE          The output file.
+```
+
+### API
+
+```js
+const anyjson = require('any-json')
+const obj = await anyjson.decode(/* string to parse */, /* format (string) */)
+const str = await anyjson.encode(/* object to encode */, /* desired format (string) */)
+```
 
 ## Contributing
 

@@ -7,7 +7,15 @@ import * as path from "path";
 import * as util from "util";
 require('util.promisify/shim')();
 
+const readFile = util.promisify(fs.readFile);
+
 const version = require("../../package.json").version;
+
+function getFormatFromFileName(fileName?: string): string | undefined {
+    if (fileName) {
+        return removeLeadingDot(path.extname(fileName)).toLowerCase();
+    }
+}
 
 function removeLeadingDot(formatOrExtension: string) {
     if (formatOrExtension && formatOrExtension[0] === ".") return formatOrExtension.substr(1);
@@ -22,46 +30,68 @@ function getEncoding(format: string) {
     }
 }
 
+const generalOptions: Array<dashdash.Option | dashdash.Group> =
+    [
+        {
+            names: ["help", 'h'],
+            type: "bool",
+            help: "Prints this help and exits."
+        },
+        {
+            name: "version",
+            type: "bool",
+            help: "Prints version information and exits."
+        }
+    ]
+
+const converstionOptions =
+    [
+        {
+            name: "input-format",
+            type: "string",
+            help: "Specifies the format of the input (assumed by file extension when not provided).",
+            helpArg: "FORMAT"
+        },
+        {
+            name: "output-format",
+            type: "string",
+            help: "Specifies the format of the output (default: json or assumed by file extension when available).",
+            helpArg: "FORMAT",
+        }
+    ]
+
+const combineOptions =
+    [
+        {
+            name: 'out',
+            type: 'string',
+            help: "The output file.",
+            helpArg: "OUT_FILE"
+        }
+    ];
+
 const convertConfiguration: dashdash.ParserConfiguration =
-    {
-        options: [
-            {
-                names: ["help", 'h'],
-                type: "bool",
-                help: "Prints this help and exits."
-            },
-            {
-                name: "version",
-                type: "bool",
-                help: "Prints version information and exits."
-            },
-            { group: "convert options" },
-            {
-                name: "input-format",
-                type: "string",
-                help: "Specifies the format of the input (assumed by file extension when not provided).",
-                helpArg: "FORMAT"
-            },
-            {
-                name: "output-format",
-                type: "string",
-                help: "Specifies the format of the output (default: json or assumed by file extension when available).",
-                helpArg: "FORMAT",
-            }
-        ]
-    };
+    { options: converstionOptions };
+
+const combineConfiguration: dashdash.ParserConfiguration =
+    { options: converstionOptions.concat(combineOptions) }
 
 export async function main(argv: string[]) {
 
-    const commands = ['convert'];
+    const commands = ['convert', "combine"];
 
     const commandSpecified = commands.indexOf(argv[2]) >= 0;
     const command = commandSpecified ? argv[2] : "convert";
 
-    const convertParser = dashdash.createParser(convertConfiguration);
-
     function getHelpMessage() {
-        const help = convertParser.help();
+        const help = new dashdash.Parser(
+            {
+                options: generalOptions
+                    .concat(converstionOptions)
+                    .concat({ group: "combine (additional options)" })
+                    .concat(combineOptions)
+            }
+        ).help();
         return `usage: any-json [command] FILE [options] [OUT_FILE]
 
 any-json can be used to convert (almost) anything to JSON.
@@ -70,19 +100,16 @@ This version supports:
     cson, csv, hjson, ini, json, json5, yaml
 
 command:
-    convert (default when none specified)
+    convert    convert between formats (default when none specified)
+    combine    combine multiple documents
 
 options:
 ${help}`
     }
 
     const options = function () {
-        try {
-            return convertParser.parse({ argv, slice: commandSpecified ? 3 : 2 });
-        }
-        catch (err) {
-            throw err;
-        }
+        const parser = dashdash.createParser({ options: generalOptions, allowUnknown: true });
+        return parser.parse(argv);
     }();
 
     if (options.version) {
@@ -93,32 +120,57 @@ ${help}`
         return getHelpMessage();
     }
 
-    if (options._args.length > 2) {
-        throw "too many arguments";
+    async function convert(value: any, options: any, outputFileName?: string) {
+        const result = await anyjson.encode(value, options.output_format || getFormatFromFileName(outputFileName) || "json");
+
+        if (outputFileName) {
+            await util.promisify(fs.writeFile)(outputFileName, result, "utf8")
+            return "";
+        }
+        return result;
     }
 
-    function getFormatFromFileName(fileName?: string): string | undefined {
-        if (fileName)   {
-            return removeLeadingDot(path.extname(fileName)).toLowerCase();
+    switch (command) {
+        case "convert": {
+            const parser = dashdash.createParser(convertConfiguration);
+            const options = parser.parse({ argv, slice: commandSpecified ? 3 : 2 });
+
+            if (options._args.length > 2) {
+                throw "too many arguments";
+            }
+
+            const fileName = options._args[0] as string;
+            const format = options.input_format || getFormatFromFileName(fileName);
+
+            // TODO: Will need to check for binary files (see `getEncoding`)
+            const fileContents = await readFile(fileName, "utf8")
+
+            const parsed = await anyjson.decode(fileContents, format)
+
+            const outputFileName = options._args[1]
+            return await convert(parsed, options, outputFileName);
+        }
+        case "combine": {
+            const parser = new dashdash.Parser(combineConfiguration)
+
+            const options = parser.parse({ argv, slice: 3 });
+
+            const items = await Promise.all(
+                options._args.map(async fileName => {
+                    // TODO: Will need to check for binary files (see `getEncoding`)
+                    const format = options.input_format || getFormatFromFileName(fileName);
+                    const fileContents = await readFile(fileName, 'utf8') as string
+                    return await anyjson.decode(fileContents, format)
+                })
+            )
+
+            const outputFileName = options.out;
+            return await convert(items, options, outputFileName);
         }
     }
 
-    const fileName = options._args[0] as string;
-    const format = options.input_format || getFormatFromFileName(fileName);
-
-    // TODO: Will need to check for binary files (see `getEncoding`)
-    const fileContents = await util.promisify(fs.readFile)(fileName, "utf8")
-
-    const parsed = await anyjson.decode(fileContents, format)
-
-    const outputFileName = options._args[1]
-    const result = await anyjson.encode(parsed, options.output_format || getFormatFromFileName(outputFileName) || "json");
-
-    if (outputFileName) {
-        await util.promisify(fs.writeFile)(outputFileName, result, "utf8")
-        return "";
-    }
-    return result;
+    // Should be unreachable.
+    throw new Error(`Command ${command} not implemented`)
 }
 
 if (require.main === module) {
