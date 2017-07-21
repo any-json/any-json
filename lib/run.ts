@@ -9,6 +9,12 @@ require('util.promisify/shim')();
 
 const version = require("../../package.json").version;
 
+function getFormatFromFileName(fileName?: string): string | undefined {
+    if (fileName) {
+        return removeLeadingDot(path.extname(fileName)).toLowerCase();
+    }
+}
+
 function removeLeadingDot(formatOrExtension: string) {
     if (formatOrExtension && formatOrExtension[0] === ".") return formatOrExtension.substr(1);
     else return formatOrExtension;
@@ -93,32 +99,33 @@ ${help}`
         return getHelpMessage();
     }
 
-    if (options._args.length > 2) {
-        throw "too many arguments";
-    }
+    switch (command) {
+        case "convert": {
+            if (options._args.length > 2) {
+                throw "too many arguments";
+            }
 
-    function getFormatFromFileName(fileName?: string): string | undefined {
-        if (fileName)   {
-            return removeLeadingDot(path.extname(fileName)).toLowerCase();
+            const fileName = options._args[0] as string;
+            const format = options.input_format || getFormatFromFileName(fileName);
+
+            // TODO: Will need to check for binary files (see `getEncoding`)
+            const fileContents = await util.promisify(fs.readFile)(fileName, "utf8")
+
+            const parsed = await anyjson.decode(fileContents, format)
+
+            const outputFileName = options._args[1]
+            const result = await anyjson.encode(parsed, options.output_format || getFormatFromFileName(outputFileName) || "json");
+
+            if (outputFileName) {
+                await util.promisify(fs.writeFile)(outputFileName, result, "utf8")
+                return "";
+            }
+            return result;
         }
     }
 
-    const fileName = options._args[0] as string;
-    const format = options.input_format || getFormatFromFileName(fileName);
-
-    // TODO: Will need to check for binary files (see `getEncoding`)
-    const fileContents = await util.promisify(fs.readFile)(fileName, "utf8")
-
-    const parsed = await anyjson.decode(fileContents, format)
-
-    const outputFileName = options._args[1]
-    const result = await anyjson.encode(parsed, options.output_format || getFormatFromFileName(outputFileName) || "json");
-
-    if (outputFileName) {
-        await util.promisify(fs.writeFile)(outputFileName, result, "utf8")
-        return "";
-    }
-    return result;
+    // Should be unreachable.
+    throw new Error(`Command ${command} not implemented`)
 }
 
 if (require.main === module) {
