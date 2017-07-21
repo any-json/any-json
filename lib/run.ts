@@ -35,7 +35,7 @@ const convertConfiguration: dashdash.ParserConfiguration =
                 type: "bool",
                 help: "Prints version information and exits."
             },
-            {group: "convert options"},
+            { group: "convert options" },
             {
                 name: "input-format",
                 type: "string",
@@ -45,9 +45,8 @@ const convertConfiguration: dashdash.ParserConfiguration =
             {
                 name: "output-format",
                 type: "string",
-                help: "Specifies the format of the output (default: json).",
-                helpArg: "json",
-                default: "json"
+                help: "Specifies the format of the output (default: json or assumed by file extension when available).",
+                helpArg: "FORMAT",
             }
         ]
     };
@@ -63,7 +62,7 @@ export async function main(argv: string[]) {
 
     function getHelpMessage() {
         const help = convertParser.help();
-        return `usage: any-json [command] FILE [options]
+        return `usage: any-json [command] FILE [options] [OUT_FILE]
 
 any-json can be used to convert (almost) anything to JSON.
 
@@ -94,17 +93,32 @@ ${help}`
         return getHelpMessage();
     }
 
-    if (options._args.length > 1) {
+    if (options._args.length > 2) {
         throw "too many arguments";
     }
 
+    function getFormatFromFileName(fileName?: string): string | undefined {
+        if (fileName)   {
+            return removeLeadingDot(path.extname(fileName)).toLowerCase();
+        }
+    }
+
     const fileName = options._args[0] as string;
-    const format = options.input_format || removeLeadingDot(path.extname(fileName)).toLowerCase();
+    const format = options.input_format || getFormatFromFileName(fileName);
 
     // TODO: Will need to check for binary files (see `getEncoding`)
     const fileContents = await util.promisify(fs.readFile)(fileName, "utf8")
+
     const parsed = await anyjson.decode(fileContents, format)
-    return await anyjson.encode(parsed, options.output_format);
+
+    const outputFileName = options._args[1]
+    const result = await anyjson.encode(parsed, options.output_format || getFormatFromFileName(outputFileName) || "json");
+
+    if (outputFileName) {
+        await util.promisify(fs.writeFile)(outputFileName, result, "utf8")
+        return "";
+    }
+    return result;
 }
 
 if (require.main === module) {
