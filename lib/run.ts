@@ -16,7 +16,8 @@ const version = require("../../package.json").version;
 
 function getFormatFromFileName(fileName?: string): string | undefined {
     if (fileName) {
-        return removeLeadingDot(path.extname(fileName)).toLowerCase();
+        const extension = removeLeadingDot(path.extname(fileName)).toLowerCase();
+        return extension === "yml" ? "yaml" : extension;
     }
 }
 

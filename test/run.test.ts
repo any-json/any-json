@@ -35,6 +35,11 @@ suite("Command Line Application", () => {
     await testIsHelpMessage("--version");
   })
 
+  test(".yml files are yaml", async () => {
+    const result = await main(args("convert .travis.yml"));
+    assert.notEqual(result, "");
+  })
+
   const basicJsonFile = path.join(__dirname, 'fixtures', 'in', 'product-set.json');
 
   suite("convert", () => {
