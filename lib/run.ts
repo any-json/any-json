@@ -100,7 +100,7 @@ export async function main(argv: string[]) {
 any-json can be used to convert (almost) anything to JSON.
 
 This version supports:
-    cson, csv, hjson, ini, json, json5, yaml
+    cson, csv, hjson, ini, json, json5, toml, yaml
 
 command:
     convert    convert between formats (default when none specified)

@@ -62,6 +62,9 @@ Some loss of information may occur.  Improved parsers/serializers could provide 
 - ini
   - All numbers are converted to strings (the `ini` library would need to quote strings in order be recognize numbers)
   - In the unlikely case an object was not an array but has only has sequential, numeric members starting at zero it will be decoded as an array.
+- toml
+  - Top-level array and date objects are not supported
+    - It would be non-standard, but this could be worked around by wrapping the content in an object (then discarding the object when decoding).
 - xml
   - It cannot parse its own output (node-xml2js#391)[https://github.com/Leonidas-from-XIV/node-xml2js/issues/391]
 
@@ -82,11 +85,12 @@ usage: any-json [command] FILE [options] [OUT_FILE]
 any-json can be used to convert (almost) anything to JSON.
 
 This version supports:
-    cson, csv, hjson, ini, json, json5, yaml
+    cson, csv, hjson, ini, json, json5, toml, yaml
 
 command:
     convert    convert between formats (default when none specified)
     combine    combine multiple documents
+    split      spilts a document (containing an array) into multiple documents
 
 options:
     -h, --help              Prints this help and exits.

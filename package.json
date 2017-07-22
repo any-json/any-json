@@ -41,6 +41,9 @@
     "js-yaml": "^3.7.0",
     "json5": "^0.5.1",
     "strip-json-comments": "^2.0.1",
+    "toml-j0.4": "^1.0.10",
+    "tomlify-j0.4": "^2.1.1",
+    "typescript": "^2.4.2",
     "util.promisify": "^1.0.0",
     "xlsjs": "^0.7.5",
     "xlsx": "^0.8.1",
@@ -60,7 +63,6 @@
     "@types/xlsx": "0.0.34",
     "@types/xml2js": "^0.4.0",
     "chai": "^4.0.2",
-    "mocha": "^3.4.2",
-    "typescript": "^2.3.4"
+    "mocha": "^3.4.2"
   }
 }

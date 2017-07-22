@@ -32,6 +32,26 @@ suite('problematic-formats', () => {
 
   testEncode(problematic_formats.concat(["xml"]));
   testDecode(problematic_formats);
+
+  // TOML does not support top-level arrays.
+  suite('toml', () => {
+    test('encode', async () => {
+      const format = "toml"
+      const input = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product.json'), 'utf8'));
+      const actual = anyjson.encode(input, format);
+      fs.writeFileSync(path.join(__dirname, 'fixtures', 'out', `product.${format}`), await actual, 'utf8');
+      const expected = readFile(path.join(__dirname, 'fixtures', 'out', `product.${format}`), 'utf8');
+      return assert.strictEqual(await actual, await expected)
+    })
+
+    test('decode', async () => {
+      const format = "toml";
+      const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product.json'), 'utf8'));
+      const contents = await readFile(path.join(__dirname, 'fixtures', 'out', 'product.' + format), 'utf8')
+      const actual = await anyjson.decode(contents, format);
+      return assert.deepEqual(actual, expected)
+    })
+  })
 });
 
 suite('tabular-formats', () => {
