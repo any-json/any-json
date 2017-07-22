@@ -12,6 +12,8 @@ import csv = require('fast-csv');
 import * as hjson from 'hjson';
 import * as ini from 'ini';
 import * as json5 from 'json5';
+import * as toml from 'toml-j0.4';
+import tomlify = require('tomlify-j0.4');
 import * as util from 'util';
 require('util.promisify/shim')();
 import strip_json_comments = require('strip-json-comments');
@@ -136,6 +138,18 @@ class Json5Converter implements FormatConversion {
   }
 }
 
+class TomlConverter implements FormatConversion {
+  readonly name: string = 'toml'
+
+  public async encode(value: any) {
+    return tomlify.toToml(value, undefined);
+  }
+
+  public async decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
+    return toml.parse(text)
+  }
+}
+
 class XmlConverter implements FormatConversion {
   readonly name: string = 'xml'
 
@@ -168,6 +182,7 @@ const codecs = new Map([
   new IniConverter(),
   new JsonConverter(),
   new Json5Converter(),
+  new TomlConverter(),
   new XmlConverter(),
   new YamlConverter()
 ].map(c => [c.name, c] as [string, FormatConversion]))
