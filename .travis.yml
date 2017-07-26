@@ -2,8 +2,21 @@ language: node_js
 dist: trusty
 sudo: false
 node_js:
-  - "8.0"
-  - "7.10"
-  - "6.10"
-  - "5.12"
-  
+  - '8.0'
+  - '7.10'
+  - '6.10'
+  - '5.12'
+deploy:
+  - provider: releases
+    api_key:
+      secure: >-
+        BD1yFmcWFvJ1p8K7+CytJOAaOYEQmM2+GjLKKBlrHwwGvIHsqvNtvf05BXUrd2xb/Sy49wBWOdkxV5XOuS0kCWTOGEuQl1AsiktBmkSWFkPoX03axC2xWlmdNlK18B6/I3qnR9jcfxpKBjoVaPcv3g9U1h4EFWy5oY6gcnoHjXA=
+    'on':
+      tags: true
+  - provider: npm
+    api_key:
+      secure: >-
+        hOMob29zirfyrRPittYpfqmDuTEYiETF/CXAcAn7eP5v92NUojE8ZcNFtpOJd/JhQQ5kOqFTwbYo7aPmsFE6IyY31XzaOdnVQMS7YRHcnK710TmqLXNxUQtJP/pgto49GsCPsA0iDnWcGqfBhc4zC04T/0uuUsN8xe6pf+MY1E4=
+    email: vossad01@gmail.com
+    'on':
+      tags: true
