@@ -1,0 +1,18 @@
+[
+    {
+        "id": "2",
+        "name": "An ice sculpture",
+        "price": "12.5",
+        "tags": "cold,ice",
+        "dimensions": "[object Object]",
+        "warehouseLocation": "[object Object]"
+    },
+    {
+        "id": "3",
+        "name": "A blue mouse",
+        "price": "25.5",
+        "tags": "",
+        "dimensions": "[object Object]",
+        "warehouseLocation": "[object Object]"
+    }
+]

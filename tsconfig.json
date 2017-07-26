@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "./out",
+        "target": "es2015",
+        "module": "commonjs",
+        "strict": true,
+        "baseUrl": "types",
+        "typeRoots": [
+            "types"
+        ]
+    },
+    "include": ["lib", "test"]
+}

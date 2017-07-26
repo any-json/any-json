@@ -1,2 +1,5 @@
 \#*
 sample
+src
+tsconfig.json
+lib/test
