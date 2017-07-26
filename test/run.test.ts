@@ -21,7 +21,7 @@ suite("Command Line Application", () => {
     }
 
     await testIsHelpMessage();
-    await testIsHelpMessage("-h");
+    await testIsHelpMessage("-?");
     await testIsHelpMessage("--help");
   })
 
@@ -41,6 +41,34 @@ suite("Command Line Application", () => {
   })
 
   const basicJsonFile = path.join(__dirname, 'fixtures', 'in', 'product-set.json');
+
+  suite("legacy argument format", () => {
+    test("opt is not supported", async () => {
+      const result = await main(args("whatever -opt whatever"));
+      assert.match(result as string, /The "opt" argument is no longer supported./)
+    })
+
+    test("j is for JSON", async () => {
+      const result = await main(args(`-j ${basicJsonFile} ignored`));
+      assert.strictEqual(result, fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.json'), 'utf8'));
+    })
+
+    test("c is for [JSON] Compact", async () => {
+      const result = await main(args(`${basicJsonFile} -c ignored`));
+      assert.strictEqual(result, JSON.stringify(JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.json'), 'utf8'))));
+    })
+
+    test("h is for Hjson", async () => {
+      const result = await main(args(`${basicJsonFile} ignored -h`));
+      assert.strictEqual(result, fs.readFileSync(path.join(__dirname, 'fixtures', 'out', 'product-set.hjson'), 'utf8'));
+    })
+
+    test("format is for input format", async () => {
+      const file = path.join(__dirname, 'fixtures', 'out', 'product-set.ini')
+      const result = await main(args(`-format=ini ${file}`));
+      assert.strictEqual(result, fs.readFileSync(path.join(__dirname, 'fixtures', 'in', `product-set.ini.json`), 'utf8'))
+    })
+  })
 
   suite("convert", () => {
     test("too many args", async () => {

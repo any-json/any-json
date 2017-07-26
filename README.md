@@ -93,7 +93,7 @@ command:
     split      spilts a document (containing an array) into multiple documents
 
 options:
-    -h, --help              Prints this help and exits.
+    -?, --help              Prints this help and exits.
     --version               Prints version information and exits.
     --input-format=FORMAT   Specifies the format of the input (assumed by file
                             extension when not provided).

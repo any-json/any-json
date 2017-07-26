@@ -6,7 +6,7 @@ import * as anyjson from "./";
 import * as path from "path";
 import * as util from "util";
 import formatUnicorn = require("format-unicorn/safe");
-import {EOL} from "os";
+import { EOL } from "os";
 
 require('util.promisify/shim')();
 
@@ -37,7 +37,7 @@ function getEncoding(format: string) {
 const generalOptions: Array<dashdash.Option | dashdash.Group> =
     [
         {
-            names: ["help", 'h'],
+            names: ["help", '?'],
             type: "bool",
             help: "Prints this help and exits."
         },
@@ -125,6 +125,57 @@ ${help}`
         return getHelpMessage();
     }
 
+    if (!commandSpecified) {
+        // Try legacy argument format
+        const options: any = {}
+        var unnamedArgs = [] as string[];
+        argv.slice(2).forEach(
+            function (x) {
+                if (x[0] === "-") {
+                    var i = x.indexOf("=");
+                    options[x.substr(1, i > 0 ? i - 1 : undefined)] = i > 0 ? x.substr(i + 1) : true;
+                }
+                else unnamedArgs.push(x);
+            });
+
+        const legacyProperties = ["j", "c", "h", "format", "opt"]
+
+        if (Object.getOwnPropertyNames(options).some(key => legacyProperties.indexOf(key) >= 0)) {
+
+            if (options.opt) {
+                return `The "opt" argument is no longer supported.
+Please open an issue on GitHub describing your need:
+
+    https://github.com/any-json/any-json
+
+In the mean time, you can downgrade to 2.2.0:
+
+    npm install any-json@2.2.0
+`
+            }
+
+            if (unnamedArgs.length < 1) {
+                throw `too few arguments: please specify the file to convert
+for help use 'any-json -?`;
+            }
+
+            const format = options.format || getFormatFromFileName(unnamedArgs[0]);
+            const input = await anyjson.decode(await readFile(unnamedArgs[0], 'utf8'), format);
+
+            if (options.c) {
+                return JSON.stringify(input);
+            }
+
+            if (options.h) {
+                return await anyjson.encode(input, "hjson");
+            }
+
+            // options.j or default
+            return await anyjson.encode(input, "json");
+        }
+        // Not legacy parsing continue as usual
+    }
+
     async function convert(value: any, options: any, outputFileName?: string) {
         const result = await anyjson.encode(value, options.output_format || getFormatFromFileName(outputFileName) || "json");
 
@@ -188,16 +239,16 @@ ${help}`
 
             const array = await anyjson.decode(fileContents, format) as any[]
 
-            if (!Array.isArray(array)){
+            if (!Array.isArray(array)) {
                 throw "split only works on arrays";
             }
 
             const writtenFiles = await Promise.all(
                 array.map(async (obj: any) => {
-                const fileName = formatUnicorn(outputPattern, obj);
-                await convert(obj, options, fileName)
-                return `${fileName} written`;
-            }))
+                    const fileName = formatUnicorn(outputPattern, obj);
+                    await convert(obj, options, fileName)
+                    return `${fileName} written`;
+                }))
 
             return writtenFiles.join(EOL);
         }
