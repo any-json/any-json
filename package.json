@@ -4,6 +4,9 @@
   "main": "./out/lib/index.js",
   "typing": "./out/lib/index.d.ts",
   "author": "Christian Zangl",
+  "contributors": [
+    "Adam Voss"
+  ],
   "version": "3.0.0",
   "keywords": [
     "json",
@@ -17,13 +20,13 @@
   "bin": {
     "any-json": "out/lib/run.js"
   },
-  "homepage": "https://github.com/laktak/any-json",
+  "homepage": "https://github.com/any-json/any-json",
   "repository": {
     "type": "git",
-    "url": "https://github.com/laktak/any-json.git"
+    "url": "https://github.com/any-json/any-json.git"
   },
   "bugs": {
-    "url": "https://github.com/laktak/any-json/issues"
+    "url": "https://github.com/any-json/any-json/issues"
   },
   "license": "MIT",
   "scripts": {
