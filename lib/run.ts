@@ -174,8 +174,27 @@ In the mean time, you can downgrade to 2.2.0:
       }
 
       if (unnamedArgs.length < 1) {
-        throw `too few arguments: please specify the file to convert
+        if (!options.format) {
+          throw `too few arguments: please specify the file to convert
 for help use 'any-json -?`;
+        }
+
+        const stdin = process.stdin;
+        const encoding = getEncoding(options.format);
+
+        stdin.resume();
+        if (encoding !== "binary") {
+          stdin.setEncoding(encoding);
+        }
+
+        let text = "";
+        stdin.on("data", (chunk: string | Buffer) => { text += chunk; });
+
+        return await new Promise((resolve, reject) => {
+          stdin.on("end", async () => {
+            resolve(await legacyEncode(options, await anyjson.decode(text, options.format)));
+          });
+        });
       }
 
       const format = options.format || getFormatFromFileName(unnamedArgs[0]);

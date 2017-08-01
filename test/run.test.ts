@@ -68,6 +68,23 @@ suite("Command Line Application", () => {
       const result = await main(args(`-format=ini ${file}`));
       assert.strictEqual(result, fs.readFileSync(path.join(__dirname, 'fixtures', 'in', `product-set.ini.json`), 'utf8'))
     })
+
+    test("reading from stdin", async () => {
+      require('mock-stdin').stdin();
+      const resultPromise = main(args(`-format=hjson`));
+
+      const mockStdin: any = process.stdin;
+      mockStdin.send("{key:1}");
+      mockStdin.send(null);
+
+      assert.strictEqual(await resultPromise, '{\n    "key": 1\n}');
+    })
+
+    test("reading from stdin requires format argument", async () => {
+      const result = await main(args(``)) as string;
+
+      assert.match(result, /^usage:.*/);
+    })
   })
 
   suite("convert", () => {

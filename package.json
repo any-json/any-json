@@ -66,6 +66,7 @@
     "@types/xlsx": "0.0.34",
     "@types/xml2js": "^0.4.0",
     "chai": "^4.0.2",
-    "mocha": "^3.4.2"
+    "mocha": "^3.4.2",
+    "mock-stdin": "^0.3.1"
   }
 }
