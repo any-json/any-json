@@ -34,6 +34,34 @@ function getEncoding(format: string) {
   }
 }
 
+function legacyOptionsParsing(argv: string[]) {
+  const options: any = {}
+  var unnamedArgs = [] as string[];
+  argv.slice(2).forEach(
+    function (x) {
+      if (x[0] === "-") {
+        var i = x.indexOf("=");
+        options[x.substr(1, i > 0 ? i - 1 : undefined)] = i > 0 ? x.substr(i + 1) : true;
+      }
+      else unnamedArgs.push(x);
+    });
+
+  return { options, unnamedArgs };
+}
+
+async function legacyEncode(options: any, input: any) {
+  if (options.c) {
+    return JSON.stringify(input);
+  }
+
+  if (options.h) {
+    return await anyjson.encode(input, "hjson");
+  }
+
+  // options.j or default
+  return await anyjson.encode(input, "json");
+}
+
 const generalOptions: Array<dashdash.Option | dashdash.Group> =
   [
     {
@@ -127,16 +155,7 @@ ${help}`
 
   if (!commandSpecified) {
     // Try legacy argument format
-    const options: any = {}
-    var unnamedArgs = [] as string[];
-    argv.slice(2).forEach(
-      function (x) {
-        if (x[0] === "-") {
-          var i = x.indexOf("=");
-          options[x.substr(1, i > 0 ? i - 1 : undefined)] = i > 0 ? x.substr(i + 1) : true;
-        }
-        else unnamedArgs.push(x);
-      });
+    const { options, unnamedArgs } = legacyOptionsParsing(argv);
 
     const legacyProperties = ["j", "c", "h", "format", "opt"]
 
@@ -155,23 +174,33 @@ In the mean time, you can downgrade to 2.2.0:
       }
 
       if (unnamedArgs.length < 1) {
-        throw `too few arguments: please specify the file to convert
+        if (!options.format) {
+          throw `too few arguments: please specify the file to convert
 for help use 'any-json -?`;
+        }
+
+        const stdin = process.stdin;
+        const encoding = getEncoding(options.format);
+
+        stdin.resume();
+        if (encoding !== "binary") {
+          stdin.setEncoding(encoding);
+        }
+
+        let text = "";
+        stdin.on("data", (chunk: string | Buffer) => { text += chunk; });
+
+        return await new Promise((resolve, reject) => {
+          stdin.on("end", async () => {
+            resolve(await legacyEncode(options, await anyjson.decode(text, options.format)));
+          });
+        });
       }
 
       const format = options.format || getFormatFromFileName(unnamedArgs[0]);
       const input = await anyjson.decode(await readFile(unnamedArgs[0], 'utf8'), format);
 
-      if (options.c) {
-        return JSON.stringify(input);
-      }
-
-      if (options.h) {
-        return await anyjson.encode(input, "hjson");
-      }
-
-      // options.j or default
-      return await anyjson.encode(input, "json");
+      return await legacyEncode(options, input);
     }
     // Not legacy parsing continue as usual
   }
