@@ -69,7 +69,7 @@ Some loss of information may occur.  Improved parsers/serializers could provide 
   - Top-level array and date objects are not supported
     - It would be non-standard, but this could be worked around by wrapping the content in an object (then discarding the object when decoding).
 - xml
-  - It cannot parse its own output (node-xml2js#391)[https://github.com/Leonidas-from-XIV/node-xml2js/issues/391]
+  - It cannot parse its own output [node-xml2js#391](https://github.com/Leonidas-from-XIV/node-xml2js/issues/391)
 
 ### Limited
 
