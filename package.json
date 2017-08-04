@@ -2,7 +2,7 @@
   "name": "any-json",
   "description": "Convert (almost) anything to JSON.",
   "main": "./out/lib/index.js",
-  "typing": "./out/lib/index.d.ts",
+  "typings": "./out/lib/index.d.ts",
   "author": "Christian Zangl",
   "contributors": [
     "Adam Voss"
