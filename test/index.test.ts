@@ -9,6 +9,16 @@ import * as chai from 'chai'
 
 const assert = chai.assert;
 
+const fixturesDirectory = path.join(__dirname, 'fixtures');
+
+function inputFixture(name: string) {
+  return path.join(fixturesDirectory, 'in', name)
+}
+
+function outputFixture(name: string) {
+  return path.join(fixturesDirectory, 'out', name)
+}
+
 suite('safe-formats', () => {
 
   const safe_formats = [
@@ -37,17 +47,17 @@ suite('problematic-formats', () => {
   suite('toml', () => {
     test('encode', async () => {
       const format = "toml"
-      const input = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product.json'), 'utf8'));
+      const input = JSON.parse(fs.readFileSync(inputFixture('product.json'), 'utf8'));
       const actual = anyjson.encode(input, format);
-      fs.writeFileSync(path.join(__dirname, 'fixtures', 'out', `product.${format}`), await actual, 'utf8');
-      const expected = readFile(path.join(__dirname, 'fixtures', 'out', `product.${format}`), 'utf8');
+      fs.writeFileSync(outputFixture(`product.${format}`), await actual, 'utf8');
+      const expected = readFile(outputFixture(`product.${format}`), 'utf8');
       return assert.strictEqual(await actual, await expected)
     })
 
     test('decode', async () => {
       const format = "toml";
-      const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product.json'), 'utf8'));
-      const contents = await readFile(path.join(__dirname, 'fixtures', 'out', 'product.' + format), 'utf8')
+      const expected = JSON.parse(fs.readFileSync(inputFixture('product.json'), 'utf8'));
+      const contents = await readFile(outputFixture('product.' + format), 'utf8')
       const actual = await anyjson.decode(contents, format);
       return assert.deepEqual(actual, expected)
     })
@@ -69,12 +79,12 @@ suite('tabular-formats', () => {
 function testEncode(formats: string[]) {
   suite('encode', function () {
     suite('product-set', () => {
-      const input = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
+      const input = JSON.parse(fs.readFileSync(inputFixture('product-set.json'), 'utf8'));
 
       for (const format of formats) {
         test(format, async function () {
           const actual = anyjson.encode(input, format)
-          const expected = readFile(path.join(__dirname, 'fixtures', 'out', `product-set.${format}`), 'utf8')
+          const expected = readFile(outputFixture(`product-set.${format}`), anyjson.getEncoding(format))
           return assert.strictEqual(await actual, await expected)
         })
       }
@@ -89,7 +99,7 @@ function testDecode(formats: string[]) {
       for (const format of formats) {
         test(format, async function () {
           const expected = await getExpectedJson(format)
-          const contents = await readFile(path.join(__dirname, 'fixtures', 'out', 'product-set.' + format), 'utf8')
+          const contents = await readFile(outputFixture('product-set.' + format), anyjson.getEncoding(format))
           const actual = await anyjson.decode(contents, format);
           return assert.deepEqual(actual, expected)
         })
@@ -99,10 +109,10 @@ function testDecode(formats: string[]) {
 }
 
 async function getExpectedJson(format: string) {
-  const specializedPath = path.join(__dirname, 'fixtures', 'in', `product-set.${format}.json`);
+  const specializedPath = inputFixture(`product-set.${format}.json`);
   if (fs.existsSync(specializedPath)) {
     return JSON.parse(fs.readFileSync(specializedPath, 'utf8'));
   } else {
-    return JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'in', 'product-set.json'), 'utf8'));
+    return JSON.parse(fs.readFileSync(inputFixture('product-set.json'), 'utf8'));
   }
 }
