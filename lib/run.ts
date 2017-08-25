@@ -26,14 +26,6 @@ function removeLeadingDot(formatOrExtension: string) {
   else return formatOrExtension;
 }
 
-function getEncoding(format: string) {
-  switch (format) {
-    case "xlsx": return "binary";
-    case "xls": return "binary";
-    default: return "utf8";
-  }
-}
-
 function legacyOptionsParsing(argv: string[]) {
   const options: any = {}
   var unnamedArgs = [] as string[];
@@ -131,6 +123,13 @@ any-json can be used to convert (almost) anything to JSON.
 This version supports:
     cson, csv, hjson, ini, json, json5, toml, yaml
 
+This version has is beta support for:
+    xls, xlsx
+
+The beta formats should work, but since they are new,
+  behavior may change in later releases in response to feedback
+  without requiring a major version update.
+
 command:
     convert    convert between formats (default when none specified)
     combine    combine multiple documents
@@ -180,7 +179,7 @@ for help use 'any-json -?`;
         }
 
         const stdin = process.stdin;
-        const encoding = getEncoding(options.format);
+        const encoding = anyjson.getEncoding(options.format);
 
         stdin.resume();
         if (encoding !== "binary") {
@@ -198,7 +197,7 @@ for help use 'any-json -?`;
       }
 
       const format = options.format || getFormatFromFileName(unnamedArgs[0]);
-      const input = await anyjson.decode(await readFile(unnamedArgs[0], 'utf8'), format);
+      const input = await anyjson.decode(await readFile(unnamedArgs[0], anyjson.getEncoding(format)), format);
 
       return await legacyEncode(options, input);
     }
@@ -206,10 +205,11 @@ for help use 'any-json -?`;
   }
 
   async function convert(value: any, options: any, outputFileName?: string) {
-    const result = await anyjson.encode(value, options.output_format || getFormatFromFileName(outputFileName) || "json");
+    const output_format = options.output_format || getFormatFromFileName(outputFileName) || "json";
+    const result = await anyjson.encode(value, output_format);
 
     if (outputFileName) {
-      await util.promisify(fs.writeFile)(outputFileName, result, "utf8")
+      await util.promisify(fs.writeFile)(outputFileName, result, anyjson.getEncoding(output_format))
       return "";
     }
     return result;
@@ -227,8 +227,7 @@ for help use 'any-json -?`;
       const fileName = options._args[0] as string;
       const format = options.input_format || getFormatFromFileName(fileName);
 
-      // TODO: Will need to check for binary files (see `getEncoding`)
-      const fileContents = await readFile(fileName, "utf8")
+      const fileContents = await readFile(fileName, anyjson.getEncoding(format))
 
       const parsed = await anyjson.decode(fileContents, format)
 
@@ -242,9 +241,8 @@ for help use 'any-json -?`;
 
       const items = await Promise.all(
         options._args.map(async fileName => {
-          // TODO: Will need to check for binary files (see `getEncoding`)
           const format = options.input_format || getFormatFromFileName(fileName);
-          const fileContents = await readFile(fileName, 'utf8') as string
+          const fileContents = await readFile(fileName, anyjson.getEncoding(format)) as string
           return await anyjson.decode(fileContents, format)
         })
       )
@@ -263,7 +261,6 @@ for help use 'any-json -?`;
 
       const format = options.input_format || getFormatFromFileName(fileName);
 
-      // TODO: Will need to check for binary files (see `getEncoding`)
       const fileContents = await readFile(fileName, "utf8")
 
       const array = await anyjson.decode(fileContents, format) as any[]
@@ -289,7 +286,7 @@ for help use 'any-json -?`;
 
 if (require.main === module) {
   main(process.argv)
-    .then(s => console.log(s))
+    .then(s => process.stdout.write(s as string, 'binary'))
     .catch(error => {
       console.error(error);
       process.exit(2);

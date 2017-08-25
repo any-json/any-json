@@ -70,16 +70,41 @@ suite('problematic-formats', () => {
   })
 });
 
-suite('tabular-formats', () => {
 
-  const tabular_formats = [
-    "csv",
-    // "xls",
-    // "xlsx"
-  ]
+suite('tabular-formats', () => {
+  const tabular_formats = ["csv"];
 
   testEncode(tabular_formats);
   testDecode(tabular_formats);
+});
+
+suite('multi-sheet workbooks', () => {
+
+  const multisheet_formats = [
+    "xls",
+    "xlsx"
+  ];
+
+  testDecode(multisheet_formats);
+
+  for (const format of multisheet_formats) {
+    test(`decode ${format}`, async () => {
+      const expected = JSON.parse(await readInputFixture(`multi-sheet-workbook.json`));
+      const contents = await readOutputFixture(`multi-sheet-workbook.${format}`, anyjson.getEncoding(format))
+      const actual = await anyjson.decode(contents, format);
+      return assert.deepEqual(actual, expected)
+    });
+
+    test(`encode ${format}`, async () => {
+      const input = JSON.parse(await readInputFixture(`multi-sheet-workbook.json`));
+      const actual = await anyjson.encode(input, format)
+      const expected = await readOutputFixture(`multi-sheet-workbook.${format}`, anyjson.getEncoding(format))
+
+      return assert.deepEqual(
+        await anyjson.decode(actual as string, format),
+        await anyjson.decode(expected, format));
+    });
+  }
 });
 
 function testEncode(formats: string[]) {
