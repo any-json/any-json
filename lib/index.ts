@@ -23,7 +23,7 @@ import * as yaml from 'js-yaml';
 
 interface FormatConversion {
   readonly name: string
-  encode(value: any): Promise<string | Buffer>
+  encode(value: any): Promise<string>
   decode(text: string, reviver?: (key: any, value: any) => any): Promise<any>
 }
 
@@ -246,7 +246,7 @@ export async function decode(text: string, format: string): Promise<any> {
   throw new Error("Unknown format " + format + "!");
 }
 
-export async function encode(value: any, format: string): Promise<string | Buffer> {
+export async function encode(value: any, format: string): Promise<string> {
   const codec = codecs.get(format)
 
   if (codec) {
