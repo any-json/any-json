@@ -49,7 +49,6 @@ suite('problematic-formats', () => {
       const format = "toml"
       const input = JSON.parse(fs.readFileSync(inputFixture('product.json'), 'utf8'));
       const actual = anyjson.encode(input, format);
-      fs.writeFileSync(outputFixture(`product.${format}`), await actual, 'utf8');
       const expected = readFile(outputFixture(`product.${format}`), 'utf8');
       return assert.strictEqual(await actual, await expected)
     })
