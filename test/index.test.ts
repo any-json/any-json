@@ -2,7 +2,6 @@ import "mocha"
 import * as anyjson from '../lib'
 import * as fs from 'fs'
 import promisify = require('util.promisify');
-const writeFile = promisify(fs.writeFile)
 const readFile = promisify(fs.readFile)
 import * as path from 'path'
 import * as chai from 'chai'
@@ -12,11 +11,19 @@ const assert = chai.assert;
 const fixturesDirectory = path.join(__dirname, 'fixtures');
 
 function inputFixture(name: string) {
-  return path.join(fixturesDirectory, 'in', name)
+  return path.join(fixturesDirectory, 'in', name);
 }
 
 function outputFixture(name: string) {
-  return path.join(fixturesDirectory, 'out', name)
+  return path.join(fixturesDirectory, 'out', name);
+}
+
+function readInputFixture(name: string) {
+  return readFile(inputFixture(name), 'utf8');
+}
+
+function readOutputFixture(name: string, encoding = 'utf8') {
+  return readFile(outputFixture(name), encoding);
 }
 
 suite('safe-formats', () => {
@@ -47,16 +54,16 @@ suite('problematic-formats', () => {
   suite('toml', () => {
     test('encode', async () => {
       const format = "toml"
-      const input = JSON.parse(await readFile(inputFixture('product.json'), 'utf8'));
+      const input = JSON.parse(await readInputFixture('product.json'));
       const actual = anyjson.encode(input, format);
-      const expected = readFile(outputFixture(`product.${format}`), 'utf8');
+      const expected = readOutputFixture(`product.${format}`);
       return assert.strictEqual(await actual, await expected)
     })
 
     test('decode', async () => {
       const format = "toml";
-      const expected = JSON.parse(await readFile(inputFixture('product.json'), 'utf8'));
-      const contents = await readFile(outputFixture('product.' + format), 'utf8')
+      const expected = JSON.parse(await readInputFixture('product.json'));
+      const contents = await readOutputFixture('product.' + format)
       const actual = await anyjson.decode(contents, format);
       return assert.deepEqual(actual, expected)
     })
@@ -80,9 +87,9 @@ function testEncode(formats: string[]) {
     suite('product-set', () => {
       for (const format of formats) {
         test(format, async function () {
-          const input = JSON.parse(await readFile(inputFixture('product-set.json'), 'utf8'));
+          const input = JSON.parse(await readInputFixture('product-set.json'));
           const actual = anyjson.encode(input, format)
-          const expected = readFile(outputFixture(`product-set.${format}`), anyjson.getEncoding(format))
+          const expected = readOutputFixture(`product-set.${format}`, anyjson.getEncoding(format))
           return assert.strictEqual(await actual, await expected)
         })
       }
@@ -97,7 +104,7 @@ function testDecode(formats: string[]) {
       for (const format of formats) {
         test(format, async function () {
           const expected = await getExpectedJson(format)
-          const contents = await readFile(outputFixture('product-set.' + format), anyjson.getEncoding(format))
+          const contents = await readOutputFixture('product-set.' + format, anyjson.getEncoding(format))
           const actual = await anyjson.decode(contents, format);
           return assert.deepEqual(actual, expected)
         })
@@ -111,6 +118,6 @@ async function getExpectedJson(format: string) {
   if (fs.existsSync(specializedPath)) {
     return JSON.parse(await readFile(specializedPath, 'utf8'));
   } else {
-    return JSON.parse(await readFile(inputFixture('product-set.json'), 'utf8'));
+    return JSON.parse(await readInputFixture('product-set.json'));
   }
 }
