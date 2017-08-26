@@ -30,13 +30,13 @@ any-json convert package.json package.json5
 
 ```bash
 # Prints an JSON array containing an item for every JSON file in directory
-any-json *.json
+any-json combine *.json
 
 # Combines A.json and B.json, writing the result to C.json
-any-json A.json B.json --C.json
+any-json combine A.json B.json --out C.json
 
 # Create a csv from a collection of flat YAML files
-any-json *.yaml -out=data.csv
+any-json combine *.yaml --out=data.csv
 ```
 
 ### split
