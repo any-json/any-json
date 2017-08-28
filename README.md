@@ -130,5 +130,7 @@ Contributions welcome!  If **any-json** is not meeting your needs or your have a
 
 ## History
 
+_For detailed release history, see [Releases](https://github.com/any-json/any-json/releases)._
+
 - v3 Re-written to be Promise-based and bi-directional (serialization capabilities as well as parsing).
 - v2 removed the experimental/unreliable format detection.
