@@ -1,0 +1,22 @@
+{
+    "Quantity": [
+        {
+            "Name": "Widget 1",
+            "Quantity": 5
+        },
+        {
+            "Name": "Widget 2",
+            "Quantity": 3
+        }
+    ],
+    "Prices": [
+        {
+            "Name": "Widget A",
+            "Price": 3
+        },
+        {
+            "Name": "Widget B",
+            "Price": 0.26
+        }
+    ]
+}

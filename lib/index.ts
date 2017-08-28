@@ -23,8 +23,45 @@ import * as yaml from 'js-yaml';
 
 interface FormatConversion {
   readonly name: string
-  encode(value: any): Promise<string | Buffer>
+  encode(value: any): Promise<string>
   decode(text: string, reviver?: (key: any, value: any) => any): Promise<any>
+}
+
+abstract class AbstractWorkbookConverter implements FormatConversion {
+  abstract readonly name: string;
+  abstract readonly bookType: XLSX.BookType;
+
+  public async encode(value: any) {
+    const book = XLSX.utils.book_new();
+
+    if (Array.isArray(value)) {
+      const sheet = XLSX.utils.json_to_sheet(value);
+      XLSX.utils.book_append_sheet(book, sheet);
+    }
+    else {
+      for (let sheetName of Object.getOwnPropertyNames(value)) {
+        const sheet = XLSX.utils.json_to_sheet(value[sheetName]);
+        XLSX.utils.book_append_sheet(book, sheet, sheetName);
+      }
+    }
+
+    return XLSX.write(book, { WTF: true, bookType: this.bookType, type: "binary" });
+  }
+
+  public async decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
+    const book = XLSX.read(text, { type: "binary" });
+    if (book.SheetNames.length === 1) {
+      return XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]], {raw: true, defval: null});
+    }
+
+    const result: any = {};
+
+    for (let sheet of book.SheetNames) {
+      result[sheet] = XLSX.utils.sheet_to_json(book.Sheets[sheet], {raw: true, defval: null })
+    }
+
+    return result;
+  }
 }
 
 class CsonConverter implements FormatConversion {
@@ -150,6 +187,16 @@ class TomlConverter implements FormatConversion {
   }
 }
 
+class XlsxConverter extends AbstractWorkbookConverter {
+  readonly name = "xlsx"
+  readonly bookType = "xlsx";
+}
+
+class XlsConverter extends AbstractWorkbookConverter {
+  readonly name = "xls"
+  readonly bookType = "xlml";
+}
+
 class XmlConverter implements FormatConversion {
   readonly name: string = 'xml'
 
@@ -183,6 +230,8 @@ const codecs = new Map([
   new JsonConverter(),
   new Json5Converter(),
   new TomlConverter(),
+  new XlsConverter(),
+  new XlsxConverter(),
   new XmlConverter(),
   new YamlConverter()
 ].map(c => [c.name, c] as [string, FormatConversion]))
@@ -197,7 +246,7 @@ export async function decode(text: string, format: string): Promise<any> {
   throw new Error("Unknown format " + format + "!");
 }
 
-export async function encode(value: any, format: string): Promise<string | Buffer> {
+export async function encode(value: any, format: string): Promise<string> {
   const codec = codecs.get(format)
 
   if (codec) {
@@ -205,4 +254,15 @@ export async function encode(value: any, format: string): Promise<string | Buffe
   }
 
   throw new Error("Unknown format " + format + "!");
+}
+
+/**
+ * Gets the anticipated string encoding for the given format.
+ */
+export function getEncoding(format: string) {
+  switch (format) {
+    case "xlsx": return "binary";
+    case "xls": return "binary";
+    default: return "utf8";
+  }
 }

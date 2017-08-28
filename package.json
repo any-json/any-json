@@ -49,8 +49,8 @@
     "typescript": "^2.4.2",
     "util.promisify": "^1.0.0",
     "xlsjs": "^0.7.5",
-    "xlsx": "^0.8.1",
-    "xml2js": "^0.4.17"
+    "xlsx": "^0.11.3",
+    "xml2js": "0.4.17"
   },
   "devDependencies": {
     "@types/chai": "^4.0.1",

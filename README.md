@@ -77,6 +77,8 @@ These formats are conceptually different and only work on a limited basis.  With
 
 Tabular formats:
 - csv
+- xls
+- xlsx
 
 ## Usage
 
@@ -89,6 +91,13 @@ any-json can be used to convert (almost) anything to JSON.
 
 This version supports:
     cson, csv, hjson, ini, json, json5, toml, yaml
+
+This version has is beta support for:
+    xls, xlsx
+
+The beta formats should work, but since they are new,
+  behavior may change in later releases in response to feedback
+  without requiring a major version update.
 
 command:
     convert    convert between formats (default when none specified)
