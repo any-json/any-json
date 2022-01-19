@@ -1,8 +1,6 @@
 import "mocha"
 import * as anyjson from '../lib'
 import * as fs from 'fs'
-import promisify = require('util.promisify');
-const readFile = promisify(fs.readFile)
 import * as path from 'path'
 import * as chai from 'chai'
 
@@ -19,11 +17,11 @@ function outputFixture(name: string) {
 }
 
 function readInputFixture(name: string) {
-  return readFile(inputFixture(name), 'utf8');
+  return fs.promises.readFile(inputFixture(name), 'utf8');
 }
 
-function readOutputFixture(name: string, encoding = 'utf8') {
-  return readFile(outputFixture(name), encoding);
+function readOutputFixture(name: string, encoding: BufferEncoding = 'utf8') {
+  return fs.promises.readFile(outputFixture(name), encoding);
 }
 
 suite('safe-formats', () => {
@@ -141,7 +139,7 @@ function testDecode(formats: string[]) {
 async function getExpectedJson(format: string) {
   const specializedPath = inputFixture(`product-set.${format}.json`);
   if (fs.existsSync(specializedPath)) {
-    return JSON.parse(await readFile(specializedPath, 'utf8'));
+    return JSON.parse(await fs.promises.readFile(specializedPath, 'utf8'));
   } else {
     return JSON.parse(await readInputFixture('product-set.json'));
   }
