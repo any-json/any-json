@@ -7,19 +7,19 @@
  * https://github.com/laktak/any-json
  */
 
-import * as cson from 'cson';
-import csv = require('fast-csv');
+import cson from 'cson';
+import * as csv from 'fast-csv';
 import * as hjson from 'hjson';
 import * as ini from 'ini';
 import * as json5 from 'json5';
 import * as toml from 'toml-j0.4';
-import tomlify = require('tomlify-j0.4');
+import * as tomlify from 'tomlify-j0.4';
 import * as util from 'util';
-require('util.promisify/shim')();
-import strip_json_comments = require('strip-json-comments');
+import * as stripJsonComments from 'strip-json-comments';
 import * as XLSX from 'xlsx';
 import * as xml2js from 'xml2js';
 import * as yaml from 'js-yaml';
+require('util.promisify/shim')();
 
 interface FormatConversion {
   readonly name: string
@@ -80,16 +80,14 @@ class CsvConverter implements FormatConversion {
   readonly name: string = 'csv'
 
   public encode(value: any) {
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<string>(async (resolve, reject) => {
       if (Array.isArray(value)) {
-        csv.writeToString(value, { headers: true }, function (err, result) {
-          if (err) {
-            reject(err);
-          }
-          else {
-            resolve(result);
-          }
-        })
+        try{
+          const result = await csv.writeToString(value, { headers: true });
+          resolve(result);
+        }catch(err){
+          reject(err);
+        }
       }
       else {
         reject("CSV encoding requires the object be an array.")
@@ -100,7 +98,7 @@ class CsvConverter implements FormatConversion {
   public decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
     return new Promise((resolve, reject) => {
       const res: any[] = [];
-      csv.fromString(text, { headers: true })
+      csv.parseString(text, { headers: true })
         .on("data", function (data) { res.push(data); })
         .on("end", function () { resolve(res); });
     });
@@ -158,7 +156,7 @@ class JsonConverter implements FormatConversion {
   }
 
   public async decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
-    return JSON.parse(strip_json_comments(text), reviver)
+    return JSON.parse(stripJsonComments.default(text), reviver)
   }
 }
 
@@ -214,11 +212,11 @@ class YamlConverter implements FormatConversion {
   readonly name: string = 'yaml'
 
   public async encode(value: any) {
-    return yaml.safeDump(value)
+    return yaml.dump(value)
   }
 
   public async decode(text: string, reviver?: (key: any, value: any) => any): Promise<any> {
-    return yaml.safeLoad(text)
+    return yaml.load(text)
   }
 }
 
